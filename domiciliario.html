@@ -111,22 +111,35 @@
         };
 
         function escucharPedidos() {
-            db.collection("pedidos").where("estado", "==", "pendiente").onSnapshot(snap => {
-                if(!snap.empty) {
-                    pId = snap.docs[0].id;
-                    const d = snap.docs[0].data();
-                    document.getElementById('tarjeta-pedido').style.display = 'block';
-                    document.getElementById('esperando').style.display = 'none';
-                    document.getElementById('info-pedido').innerHTML = `
-                        <p><strong>🏢 COMERCIO:</strong> ${d.comercio.toUpperCase()}</p>
-                        <hr>
-                        <p><strong>📍 RECOGER EN:</strong><br>${d.recogida}</p>
-                        <p><strong>🏁 LLEVAR A:</strong><br>${d.direccion}</p>
-                        <hr>
-                        <p><strong>📦 PRODUCTO:</strong> ${d.producto}</p>
-                        <p><strong>💰 COBRO:</strong> <span style="color:#00b894; font-size:1.2rem; font-weight:bold;">$${d.valor}</span></p>
-                    `;
-                } else {
+            db.collection("pedidos").where("estado", "in", ["pendiente", "en_camino"]).onSnapshot(snap => {
+                const motoActual = localStorage.getItem('motoNom');
+                let pedidoEncontrado = false;
+
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    // Mostrar si está libre (pendiente) O si ya lo tengo yo (en_camino)
+                    if (d.estado === "pendiente" || (d.estado === "en_camino" && d.moto_nombre === motoActual)) {
+                        pId = doc.id;
+                        pedidoEncontrado = true;
+                        document.getElementById('tarjeta-pedido').style.display = 'block';
+                        document.getElementById('esperando').style.display = 'none';
+                        
+                        const btn = document.getElementById('btn-accion');
+                        btn.innerText = d.estado === "en_camino" ? "FINALIZAR ENTREGA ✅" : "ACEPTAR RUTA";
+
+                        document.getElementById('info-pedido').innerHTML = `
+                            <p><strong>🏢 COMERCIO:</strong> ${d.comercio.toUpperCase()}</p>
+                            <hr>
+                            <p><strong>📍 RECOGER EN:</strong><br>${d.recogida}</p>
+                            <p><strong>🏁 LLEVAR A:</strong><br>${d.direccion}</p>
+                            <hr>
+                            <p><strong>📦 PRODUCTO:</strong> ${d.producto}</p>
+                            <p><strong>💰 COBRO:</strong> <span style="color:#00b894; font-size:1.2rem; font-weight:bold;">$${d.valor}</span></p>
+                        `;
+                    }
+                });
+
+                if (!pedidoEncontrado) {
                     document.getElementById('tarjeta-pedido').style.display = 'none';
                     document.getElementById('esperando').style.display = 'block';
                 }
@@ -135,7 +148,6 @@
 
         function cargarMisEntregas() {
             const moto = localStorage.getItem('motoNom');
-            // Quitamos el orderBy para evitar el error de índice de Firebase
             db.collection("pedidos")
                 .where("moto_nombre", "==", moto)
                 .where("estado", "==", "completado")
@@ -161,9 +173,10 @@
 
             if(btn.innerText === "ACEPTAR RUTA") {
                 db.collection("pedidos").doc(pId).update({ 
-                    estado: "en_camino", moto_nombre: moto, moto_placa: placa 
+                    estado: "en_camino", 
+                    moto_nombre: moto, 
+                    moto_placa: placa 
                 }).then(() => {
-                    btn.innerText = "FINALIZAR ENTREGA ✅";
                     navigator.geolocation.getCurrentPosition(p => { 
                         db.collection("ubicaciones").doc("moto_activa").set({ 
                             lat: p.coords.latitude, lng: p.coords.longitude, nombre: moto 
@@ -171,11 +184,14 @@
                     });
                 });
             } else {
-                db.collection("pedidos").doc(pId).update({ estado: "completado" })
-                .then(() => {
-                    alert("¡Misión cumplida! Carrera sumada.");
-                    location.reload();
-                });
+                // Finalizar carrera
+                db.collection("pedidos").doc(pId).update({ 
+                    estado: "completado" 
+                }).then(() => {
+                    alert("¡Carrera completada!");
+                    // No hacemos reload para evitar que se pierda la conexión un segundo
+                    document.getElementById('tarjeta-pedido').style.display = 'none';
+                }).catch(e => alert("Error al finalizar: " + e));
             }
         }
     </script>
