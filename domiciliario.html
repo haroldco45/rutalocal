@@ -19,8 +19,9 @@
         .alerta { background: white; color: #2d3436; padding: 20px; border-radius: 20px; display: none; border: 3px solid #f39c12; text-align: left; margin-top: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         
         input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-family: inherit; }
-        .btn-verde { background: #00b894; color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        .btn-verde { background: #00b894; color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
         .btn-wa { background: #f39c12; color: white; padding: 12px; border-radius: 10px; text-decoration: none; display: inline-block; margin-top: 15px; }
+        hr { opacity: 0.1; margin: 10px 0; }
     </style>
 </head>
 <body>
@@ -52,8 +53,9 @@
 
         <div class="container">
             <div id="tarjeta-pedido" class="alerta">
-                <h2 style="color:#e67e22; text-align:center; margin-top:0;">¡NUEVA RUTA!</h2>
-                <div id="info-pedido"></div>
+                <h2 style="color:#e67e22; text-align:center; margin-top:0;">¡HAY RUTA! 🏁</h2>
+                <div id="info-pedido">
+                    </div>
                 <button id="btn-accion" class="btn-verde" style="margin-top:15px;" onclick="gestionar()">ACEPTAR RUTA</button>
             </div>
             
@@ -110,12 +112,18 @@
             db.collection("pedidos").where("estado", "==", "pendiente").onSnapshot(snap => {
                 if(!snap.empty) {
                     pId = snap.docs[0].id;
+                    const datos = snap.docs[0].data();
                     document.getElementById('tarjeta-pedido').style.display = 'block';
                     document.getElementById('esperando').style.display = 'none';
+                    
                     document.getElementById('info-pedido').innerHTML = `
-                        <b>Comercio:</b> ${snap.docs[0].data().comercio.toUpperCase()}<br>
-                        <b>Destino:</b> ${snap.docs[0].data().direccion}<br>
-                        <b>Cobrar:</b> $${snap.docs[0].data().valor}
+                        <p><strong>🏢 COMERCIO:</strong> ${datos.comercio.toUpperCase()}</p>
+                        <hr>
+                        <p><strong>📍 RECOGER EN:</strong><br><span style="color:#2c3e50; font-size:1.1rem;">${datos.recogida || 'Ver en comercio'}</span></p>
+                        <p><strong>🏁 LLEVAR A:</strong><br><span style="color:#2c3e50; font-size:1.1rem;">${datos.direccion}</span></p>
+                        <hr>
+                        <p><strong>📦 PRODUCTO:</strong> ${datos.producto || 'No especificado'}</p>
+                        <p><strong>💰 COBRO:</strong> <span style="color:#00b894; font-size:1.2rem; font-weight:bold;">$${datos.valor}</span></p>
                     `;
                 } else {
                     document.getElementById('tarjeta-pedido').style.display = 'none';
@@ -136,7 +144,6 @@
                     moto_placa: placa 
                 });
                 
-                // Activar GPS
                 navigator.geolocation.watchPosition(p => { 
                     db.collection("ubicaciones").doc("moto_activa").set({ 
                         lat: p.coords.latitude, 
