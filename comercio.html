@@ -4,132 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Comercio | RUTA LOCAL</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --verde-vibras: #28a745;
-            --naranja-ruta: #f39c12;
-            --oscuro: #2c3e50;
-            --gris-fondo: #f8f9fa;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            background-color: var(--gris-fondo);
-        }
-
-        .header {
-            background-color: var(--oscuro);
-            color: white;
-            padding: 15px;
-            text-align: center;
-            border-radius: 0 0 20px 20px;
-        }
-
-        .container {
-            padding: 20px;
-        }
-
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-
-        h2 { font-size: 1.2rem; color: var(--oscuro); margin-top: 0; }
-
-        label { display: block; font-size: 0.9rem; margin-bottom: 5px; color: #666; }
-
-        input, select {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-sizing: border-box;
-        }
-
-        .btn-pedir {
-            background-color: var(--naranja-ruta);
-            color: white;
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-
-        .btn-pedir:hover { background-color: #e67e22; }
-
-        .status-badge {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 20px;
-            background: var(--verde-vibras);
-            color: white;
-            font-size: 0.7rem;
-            margin-bottom: 10px;
-        }
-
-        #map-simulado {
-            height: 150px;
-            background: #e0e0e0;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #888;
-            font-size: 0.8rem;
-            border: 2px dashed #ccc;
-        }
+        body { font-family: 'Poppins', sans-serif; margin: 0; background: #f8f9fa; }
+        .header { background: #2c3e50; color: white; padding: 15px; text-align: center; font-weight: bold; }
+        .container { padding: 15px; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn-pedir { background: #f39c12; color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        #map { height: 250px; border-radius: 15px; margin-top: 10px; z-index: 1; }
     </style>
 </head>
 <body>
-
-    <div class="header">
-        <strong>RUTA LOCAL</strong> - Panel de Despacho
-    </div>
-
+    <div class="header">RUTA LOCAL - COMERCIOS</div>
     <div class="container">
         <div class="card">
-            <div class="status-badge">4 Motos disponibles en Caucasia</div>
-            <h2>Solicitar Nuevo Domicilio</h2>
-            
-            <label>Dirección de Entrega</label>
-            <input type="text" placeholder="Ej: Barrio El Castillo, Calle 10 #..." id="direccion">
-
-            <label>¿Qué enviamos? (Referencia)</label>
-            <input type="text" placeholder="Ej: 2 Almuerzos, 1 bulto de Superarroz">
-
-            <label>Valor a cobrar al cliente</label>
-            <input type="number" placeholder="$ 0.00" id="valor">
-
-            <button class="btn-pedir" onclick="solicitarMoto()">SOLICITAR MOTO AHORA</button>
+            <h3>Nuevo Pedido</h3>
+            <input type="text" id="dir" placeholder="Dirección en Caucasia">
+            <input type="text" id="ref" placeholder="¿Qué enviamos?">
+            <input type="number" id="val" placeholder="Valor a cobrar">
+            <button class="btn-pedir" onclick="solicitar()">SOLICITAR MOTO</button>
         </div>
-
         <div class="card">
-            <h2>Rastreo en tiempo real</h2>
-            <div id="map-simulado">
-                Cargando mapa de Caucasia con GPS...
-            </div>
+            <h3>Motos Cercanas</h3>
+            <div id="map"></div>
         </div>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        function solicitarMoto() {
-            const dir = document.getElementById('direccion').value;
-            if(dir === "") {
-                alert("Socia, pon la dirección para que el moto no se pierda");
-            } else {
-                alert("¡Buscando la moto más cercana! VIBRAS POSITIVAS");
-            }
+        var map = L.map('map').setView([7.9865, -75.1976], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        var motoMarker = L.marker([7.9865, -75.1976]).addTo(map).bindPopup("Moto Disponible");
+
+        function solicitar() {
+            alert("Buscando en la red RUTA LOCAL... ¡Vibras Positivas!");
         }
     </script>
-
 </body>
 </html>
