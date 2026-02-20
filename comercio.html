@@ -7,27 +7,40 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Poppins', sans-serif; margin: 0; background: #f4f7f6; }
-        .header { background: #2c3e50; color: white; padding: 15px; text-align: center; }
+        body { font-family: 'Poppins', sans-serif; margin: 0; background: #f4f7f6; color: #333; }
+        .header { background: #2c3e50; color: white; padding: 15px; text-align: center; font-weight: bold; border-bottom: 4px solid #f39c12; }
         .container { padding: 15px; max-width: 500px; margin: auto; }
-        .card { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px; }
-        #map { height: 300px; width: 100%; border-radius: 15px; border: 2px solid #2c3e50; margin-top: 10px; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn-pedir { background: #f39c12; color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        #map { height: 280px; width: 100%; border-radius: 15px; border: 2px solid #2c3e50; margin-top: 10px; background: #e0e0e0; }
+        label { font-size: 0.8rem; font-weight: bold; color: #2c3e50; display: block; margin-top: 10px; }
+        input { width: 100%; padding: 12px; margin: 5px 0 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        .btn-pedir { background: #f39c12; color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.1rem; margin-top: 10px; transition: 0.3s; }
+        .btn-pedir:active { transform: scale(0.98); background: #d35400; }
+        .vibras-tag { display: block; text-align: center; color: #f39c12; font-size: 0.8rem; margin-top: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="header">RUTA LOCAL - COMERCIO <br><small>Vibras Positivas ©</small></div>
+    <div class="header">RUTA LOCAL - COMERCIO<br><span class="vibras-tag">VIBRAS POSITIVAS ©</span></div>
+    
     <div class="container">
         <div class="card">
-            <h3>Nuevo Envío</h3>
-            <input type="text" id="dir" placeholder="Dirección de entrega">
-            <input type="text" id="ref" placeholder="¿Qué enviamos?">
-            <input type="number" id="val" placeholder="Valor a cobrar">
-            <button class="btn-pedir" onclick="enviarPedido()">SOLICITAR MOTO</button>
+            <h3 style="margin-top:0; color:#2c3e50;">🚀 Solicitar Moto</h3>
+            
+            <label>1. ¿Cómo se llama tu negocio?</label>
+            <input type="text" id="nombreLocal" placeholder="Ej: Pizzería La 20 / Super Arroz">
+            
+            <label>2. ¿A dónde llevamos el pedido?</label>
+            <input type="text" id="dirCliente" placeholder="Dirección del Cliente y Barrio">
+            
+            <label>3. ¿Qué enviamos y cuánto cobramos?</label>
+            <input type="text" id="ref" placeholder="Ej: 2 Arroz Vistahermosa + Pollo">
+            <input type="number" id="val" placeholder="Valor Total a Cobrar ($)">
+            
+            <button class="btn-pedir" onclick="enviarPedido()">SOLICITAR DOMICILIARIO</button>
         </div>
+
         <div class="card">
-            <h3>Mapa de Domiciliarios</h3>
+            <h3 style="margin-top:0; color:#2c3e50;">📍 Rastreo de la Moto</h3>
             <div id="map"></div>
         </div>
     </div>
@@ -35,7 +48,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
+        // CONFIGURACIÓN DE TU FIREBASE (YA ESTÁ CON TUS DATOS)
         const firebaseConfig = {
             apiKey: "AIzaSyCCPMFCTXUvfzgW9zp-op9yl4JkhzRa_lI",
             authDomain: "ruta-local-caucasia-55f0b.firebaseapp.com",
@@ -47,20 +62,41 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // INICIALIZAR MAPA CENTRADO EN CAUCASIA
         var map = L.map('map').setView([7.9865, -75.1976], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© Vibras Positivas'
+        }).addTo(map);
         var motoMarker = L.marker([7.9865, -75.1976]).addTo(map).bindPopup("Moto Activa");
 
         function enviarPedido() {
-            const d = document.getElementById('dir').value;
-            const p = document.getElementById('ref').value;
-            const v = document.getElementById('val').value;
-            if(!d || !v) return alert("Socia, faltan datos");
+            const local = document.getElementById('nombreLocal').value;
+            const destino = document.getElementById('dirCliente').value;
+            const producto = document.getElementById('ref').value;
+            const valor = document.getElementById('val').value;
+
+            if(!local || !destino || !valor) { 
+                alert("¡Ojo socia! Debes poner el nombre del local, la dirección y el valor."); 
+                return; 
+            }
+
             db.collection("pedidos").add({
-                direccion: d, producto: p, valor: v, estado: "pendiente", fecha: new Date()
-            }).then(() => alert("¡Pedido enviado! Vibras Positivas"));
+                comercio: local,
+                direccion: destino,
+                producto: producto,
+                valor: valor,
+                estado: "pendiente",
+                fecha: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                alert("¡Pedido publicado! Los domiciliarios ya lo pueden ver. ✌️");
+                // Limpiar campos después de enviar
+                document.getElementById('dirCliente').value = "";
+                document.getElementById('ref').value = "";
+                document.getElementById('val').value = "";
+            }).catch(err => alert("Error: " + err.message));
         }
 
+        // RASTREO GPS EN TIEMPO REAL
         db.collection("ubicaciones").doc("moto_activa").onSnapshot(doc => {
             if(doc.exists) {
                 const data = doc.data();
