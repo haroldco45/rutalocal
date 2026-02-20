@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Domiciliario | RUTA LOCAL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --verde-vibras: #28a745;
+            --naranja-ruta: #f39c12;
+            --oscuro: #2c3e50;
+            --rojo: #e74c3c;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            background-color: #1a1a1a; /* Fondo oscuro para ahorrar batería */
+            color: white;
+        }
+
+        .header {
+            background-color: var(--verde-vibras);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .container { padding: 20px; }
+
+        .card-pedido {
+            background: white;
+            color: var(--oscuro);
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 8px solid var(--naranja-ruta);
+            margin-top: 20px;
+            display: none; /* Se activa cuando llega un pedido */
+        }
+
+        .btn-accion {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .btn-aceptar { background-color: var(--verde-vibras); color: white; }
+        .btn-rechazar { background-color: var(--rojo); color: white; }
+        
+        .switch-container {
+            background: #333;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .online { color: var(--verde-vibras); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <strong>RUTA LOCAL</strong>
+        <span id="status-text">EN LÍNEA</span>
+    </div>
+
+    <div class="container">
+        <div class="switch-container">
+            <h3>Estado: <span class="online">Vibras Positivas Activas</span></h3>
+            <p style="font-size: 0.8rem; color: #bbb;">Estás disponible para recibir pedidos en Caucasia</p>
+            <button onclick="simularPedido()" style="background: none; border: 1px solid #555; color: #555; font-size: 0.6rem;">(Simular Pedido)</button>
+        </div>
+
+        <div id="pedido-alerta" class="card-pedido">
+            <h2 style="margin: 0;">¡NUEVO PEDIDO!</h2>
+            <p><strong>De:</strong> Restaurante El Sabor (Centro)</p>
+            <p><strong>Hacia:</strong> Barrio La Inmaculada</p>
+            <p><strong>Valor:</strong> $25.000 + Domicilio</p>
+            
+            <button class="btn-btn-accion btn-aceptar" onclick="aceptarPedido()">ACEPTAR Y VER RUTA</button>
+            <button class="btn-btn-accion btn-rechazar" onclick="document.getElementById('pedido-alerta').style.display='none'">RECHAZAR</button>
+        </div>
+    </div>
+
+    <script>
+        function simularPedido() {
+            document.getElementById('pedido-alerta').style.display = 'block';
+            // Aquí vibraría el celular en una App real
+        }
+
+        function aceptarPedido() {
+            alert("¡Pedido aceptado, socia! Dirígete al local. VIBRAS POSITIVAS.");
+            // Aquí abriría Google Maps con la ubicación del local
+            window.location.href = "https://www.google.com/maps"; 
+        }
+    </script>
+
+</body>
+</html>
