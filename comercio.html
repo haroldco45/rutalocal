@@ -23,7 +23,7 @@
         <img src="image.png" style="width:120px; margin-bottom:20px;">
         <h1 style="color:#f39c12;">SUSCRIPCIÓN PENDIENTE 🛑</h1>
         <p>Escribe al WhatsApp para activar tu comercio ($10.000 mensuales).</p>
-        <a id="link-pago" href="https://wa.me/573127050012" style="background:#00b894; color:white; padding:15px 30px; border-radius:10px; text-decoration:none; font-weight:bold;">PAGAR POR WHATSAPP</a>
+        <a href="https://wa.me/573127050012" style="background:#00b894; color:white; padding:15px 30px; border-radius:10px; text-decoration:none; font-weight:bold;">PAGAR POR WHATSAPP</a>
     </div>
 
     <div class="header">
@@ -33,11 +33,11 @@
     
     <div class="container">
         <div class="card">
-            <input type="text" id="nombreLocal" placeholder="Tu Nombre de Negocio">
+            <input type="text" id="nombreLocal" placeholder="Nombre de tu Negocio">
             <hr>
-            <input type="text" id="dirCliente" placeholder="Dirección del Cliente">
+            <input type="text" id="dirCliente" placeholder="Dirección Cliente">
             <input type="text" id="ref" placeholder="¿Qué enviamos?">
-            <input type="number" id="val" placeholder="Valor Cobro $">
+            <input type="number" id="val" placeholder="Cobro $">
             <button class="btn-pedir" onclick="enviarPedido()">SOLICITAR MOTO</button>
         </div>
         <div class="card"><h3>📍 Moto en Vivo</h3><div id="map"></div></div>
@@ -62,7 +62,7 @@
 
         function revisarPago() {
             if(!inputLocal.value) return;
-            db.collection("usuarios").doc(inputLocal.value.toLowerCase()).get().then(doc => {
+            db.collection("usuarios").doc(inputLocal.value.toLowerCase().trim()).get().then(doc => {
                 if(!doc.exists || doc.data().activo !== true) {
                     document.getElementById('pantalla-bloqueo').style.display = 'flex';
                 } else {
@@ -70,7 +70,10 @@
                 }
             });
         }
-        inputLocal.addEventListener('change', () => { localStorage.setItem('miLocal', inputLocal.value); revisarPago(); });
+        inputLocal.addEventListener('change', () => { 
+            localStorage.setItem('miLocal', inputLocal.value); 
+            revisarPago(); 
+        });
         window.onload = revisarPago;
 
         var map = L.map('map').setView([7.9865, -75.1976], 14);
@@ -81,7 +84,7 @@
             db.collection("pedidos").add({
                 comercio: inputLocal.value, direccion: document.getElementById('dirCliente').value,
                 valor: document.getElementById('val').value, estado: "pendiente", fecha: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => alert("¡Pedido solicitado!"));
+            }).then(() => alert("Pedido solicitado ✌️"));
         }
         db.collection("ubicaciones").doc("moto_activa").onSnapshot(doc => { if(doc.exists) motoMarker.setLatLng([doc.data().lat, doc.data().lng]); });
     </script>
