@@ -18,7 +18,7 @@
         .btn-verde { background: #00b894; color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
         .btn-wa { background: #f39c12; color: white; padding: 12px; border-radius: 10px; text-decoration: none; display: inline-block; margin-top: 15px; }
         hr { opacity: 0.1; margin: 10px 0; }
-        .detalle-entrega { font-size: 0.8rem; border-bottom: 1px solid #455a64; padding: 5px 0; display: flex; justify-content: space-between; }
+        .detalle-entrega { font-size: 0.8rem; border-bottom: 1px solid #455a64; padding: 8px 0; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
@@ -60,7 +60,7 @@
                 <h3 style="margin:0; color:#00b894;">💰 Mi Producción Hoy</h3>
                 <p id="total-carreras" style="font-size: 1.4rem; font-weight: bold; margin: 5px 0;">0 Carreras</p>
                 <div id="lista-entregas">
-                    <p style="opacity:0.5; font-size:0.8rem;">No has completado entregas hoy.</p>
+                    <p style="opacity:0.5; font-size:0.8rem;">Cargando tus entregas...</p>
                 </div>
             </div>
         </div>
@@ -120,8 +120,8 @@
                     document.getElementById('info-pedido').innerHTML = `
                         <p><strong>🏢 COMERCIO:</strong> ${d.comercio.toUpperCase()}</p>
                         <hr>
-                        <p><strong>📍 RECOGER EN:</strong><br><span style="color:#2c3e50;">${d.recogida}</span></p>
-                        <p><strong>🏁 LLEVAR A:</strong><br><span style="color:#2c3e50;">${d.direccion}</span></p>
+                        <p><strong>📍 RECOGER EN:</strong><br>${d.recogida}</p>
+                        <p><strong>🏁 LLEVAR A:</strong><br>${d.direccion}</p>
                         <hr>
                         <p><strong>📦 PRODUCTO:</strong> ${d.producto}</p>
                         <p><strong>💰 COBRO:</strong> <span style="color:#00b894; font-size:1.2rem; font-weight:bold;">$${d.valor}</span></p>
@@ -135,18 +135,22 @@
 
         function cargarMisEntregas() {
             const moto = localStorage.getItem('motoNom');
+            // Quitamos el orderBy para evitar el error de índice de Firebase
             db.collection("pedidos")
                 .where("moto_nombre", "==", moto)
                 .where("estado", "==", "completado")
-                .orderBy("fecha", "desc")
                 .onSnapshot(snap => {
                     document.getElementById('total-carreras').innerText = snap.size + " Carreras";
                     let html = "";
-                    snap.forEach(doc => {
-                        const d = doc.data();
-                        html += `<div class="detalle-entrega"><span>🏁 ${d.direccion}</span> <span>$${d.valor}</span></div>`;
-                    });
-                    if(snap.size > 0) document.getElementById('lista-entregas').innerHTML = html;
+                    if (snap.empty) {
+                        html = '<p style="opacity:0.5; font-size:0.8rem;">Aún no tienes entregas hoy.</p>';
+                    } else {
+                        snap.forEach(doc => {
+                            const d = doc.data();
+                            html += `<div class="detalle-entrega"><span>🏁 ${d.direccion}</span> <span>$${d.valor}</span></div>`;
+                        });
+                    }
+                    document.getElementById('lista-entregas').innerHTML = html;
                 });
         }
 
@@ -154,20 +158,22 @@
             const btn = document.getElementById('btn-accion');
             const moto = localStorage.getItem('motoNom');
             const placa = localStorage.getItem('motoPlaca');
+
             if(btn.innerText === "ACEPTAR RUTA") {
                 db.collection("pedidos").doc(pId).update({ 
                     estado: "en_camino", moto_nombre: moto, moto_placa: placa 
+                }).then(() => {
+                    btn.innerText = "FINALIZAR ENTREGA ✅";
+                    navigator.geolocation.getCurrentPosition(p => { 
+                        db.collection("ubicaciones").doc("moto_activa").set({ 
+                            lat: p.coords.latitude, lng: p.coords.longitude, nombre: moto 
+                        }); 
+                    });
                 });
-                navigator.geolocation.watchPosition(p => { 
-                    db.collection("ubicaciones").doc("moto_activa").set({ 
-                        lat: p.coords.latitude, lng: p.coords.longitude, nombre: moto 
-                    }); 
-                });
-                btn.innerText = "FINALIZAR ENTREGA ✅";
             } else {
                 db.collection("pedidos").doc(pId).update({ estado: "completado" })
                 .then(() => {
-                    alert("¡Entrega finalizada! Sumaste una carrera.");
+                    alert("¡Misión cumplida! Carrera sumada.");
                     location.reload();
                 });
             }
