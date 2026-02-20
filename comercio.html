@@ -9,75 +9,68 @@
     <style>
         body { font-family: 'Poppins', sans-serif; margin: 0; background: #f4f7f6; }
         .header { background: #2c3e50; color: white; padding: 15px; text-align: center; }
-        .logo-vibras { font-size: 0.7rem; color: #f39c12; font-weight: bold; margin-top: 5px; }
         .container { padding: 15px; max-width: 500px; margin: auto; }
         .card { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px; }
-        #map { height: 250px; border-radius: 15px; border: 2px solid #2c3e50; }
-        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn-pedir { background: #f39c12; color: white; width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .status-badge { font-size: 0.8rem; padding: 4px 8px; border-radius: 5px; font-weight: bold; }
-        .copyright { text-align: center; font-size: 0.7rem; color: #999; margin-top: 20px; }
+        #map { height: 300px; width: 100%; border-radius: 15px; border: 2px solid #2c3e50; margin-top: 10px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn-pedir { background: #f39c12; color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .vibras-footer { text-align: center; font-size: 0.7rem; color: #999; margin-top: 20px; }
     </style>
 </head>
 <body>
-
-<div class="header">
-    <strong>RUTA LOCAL</strong>
-    <div class="logo-vibras">Hecho por Vibras Positivas ©</div>
-</div>
-
-<div class="container">
-    <div class="card">
-        <h3>Despachar Pedido</h3>
-        <input type="text" id="dir" placeholder="Dirección Cliente">
-        <input type="text" id="ref" placeholder="Producto (Ej: Arroz Vista Hermosa)">
-        <input type="number" id="val" placeholder="Valor a cobrar">
-        <button class="btn-pedir" onclick="enviarPedido()">SOLICITAR MOTO</button>
+    <div class="header">RUTA LOCAL - COMERCIO <br><small>Vibras Positivas ©</small></div>
+    <div class="container">
+        <div class="card">
+            <h3>Nuevo Envío</h3>
+            <input type="text" id="dir" placeholder="Dirección de entrega">
+            <input type="text" id="ref" placeholder="¿Qué enviamos?">
+            <input type="number" id="val" placeholder="Valor total a cobrar">
+            <button class="btn-pedir" onclick="enviarPedido()">SOLICITAR MOTO</button>
+        </div>
+        <div class="card">
+            <h3>Mapa de Domiciliarios</h3>
+            <div id="map"></div>
+        </div>
     </div>
+    <div class="vibras-footer">Propiedad Intelectual de Vibras Positivas Derechos Reservados 2026</div>
 
-    <div class="card">
-        <h3>Rastreo en Vivo</h3>
-        <div id="map"></div>
-    </div>
-</div>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const firebaseConfig = { const firebaseConfig = {
+          apiKey: "AIzaSyCCPMFCTXUvfzgW9zp-op9yl4JkhzRa_lI",
+          authDomain: "ruta-local-caucasia-55f0b.firebaseapp.com",
+          projectId: "ruta-local-caucasia-55f0b",
+          storageBucket: "ruta-local-caucasia-55f0b.firebasestorage.app",
+          messagingSenderId: "1080436819425",
+          appId: "1:1080436819425:web:c13614086f5a2226423ea0"
+};
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-<div class="copyright">© 2026 Ruta Local Caucasia | Derechos Reservados a Vibras Positivas</div>
+        // MAPA
+        var map = L.map('map').setView([7.9865, -75.1976], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        var motoMarker = L.marker([7.9865, -75.1976]).addTo(map).bindPopup("Moto en camino");
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<script>
-    // PEGA AQUÍ TU OBJETO FIREBASE
-    const firebaseConfig = { /* TUS DATOS */ };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    // Inicializar Mapa
-    var map = L.map('map').setView([7.9865, -75.1976], 14); // Coordenadas Caucasia
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    var markerMoto = L.marker([0,0]).addTo(map);
-
-    function enviarPedido() {
-        const d = document.getElementById('dir').value;
-        const p = document.getElementById('ref').value;
-        const v = document.getElementById('val').value;
-        if(!d || !v) return alert("Completa los datos");
-
-        db.collection("pedidos").add({
-            direccion: d, producto: p, valor: v, estado: "pendiente", fecha: new Date()
-        }).then(() => alert("Pedido enviado. ¡Vibras Positivas!"));
-    }
-
-    // Escuchar ubicación del domiciliario
-    db.collection("ubicaciones").doc("moto_activa").onSnapshot(doc => {
-        if(doc.exists) {
-            const data = doc.data();
-            const pos = [data.lat, data.lng];
-            markerMoto.setLatLng(pos);
-            map.panTo(pos);
+        function enviarPedido() {
+            const d = document.getElementById('dir').value;
+            const p = document.getElementById('ref').value;
+            const v = document.getElementById('val').value;
+            if(!d || !v) return alert("Socia, faltan datos");
+            db.collection("pedidos").add({
+                direccion: d, producto: p, valor: v, estado: "pendiente", fecha: new Date()
+            }).then(() => alert("¡Pedido enviado! Vibras Positivas"));
         }
-    });
-</script>
+
+        db.collection("ubicaciones").doc("moto_activa").onSnapshot(doc => {
+            if(doc.exists) {
+                const data = doc.data();
+                motoMarker.setLatLng([data.lat, data.lng]);
+                map.panTo([data.lat, data.lng]);
+            }
+        });
+    </script>
 </body>
 </html>
