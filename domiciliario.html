@@ -7,38 +7,38 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; margin: 0; background: #2d3436; color: white; text-align: center; }
-        .header { background: #00b894; padding: 15px; font-weight: bold; border-bottom: 4px solid #f39c12; }
+        .header { background: #00b894; padding: 10px; font-weight: bold; border-bottom: 4px solid #f39c12; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .header img { width: 40px; border-radius: 5px; }
         .container { padding: 15px; max-width: 500px; margin: auto; }
-        .resumen { background: #353b48; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #f39c12; }
-        .alerta { background: white; color: #2d3436; padding: 20px; border-radius: 20px; display: none; text-align: left; border: 3px solid #f39c12; }
-        .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .alerta { background: white; color: #2d3436; padding: 20px; border-radius: 20px; display: none; border: 3px solid #f39c12; }
         .bloqueo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2d3436; color: white; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 20px; box-sizing: border-box; }
-        .historial { text-align: left; margin-top: 20px; font-size: 0.8rem; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; }
+        input { width: 80%; padding: 10px; margin: 5px; border-radius: 8px; border: none; }
     </style>
 </head>
 <body>
     <div id="pantalla-bloqueo" class="bloqueo">
+        <img src="image.png" style="width:100px; margin-bottom:20px;">
         <h1 style="color:#f39c12;">SUSCRIPCIÓN MOTO 🛑</h1>
-        <p>Tu acceso a RUTA LOCAL está inactivo. El costo mensual es de $10.000.</p>
-        <a id="link-pago" href="#" style="background:#00b894; color:white; padding:15px; border-radius:10px; text-decoration:none; font-weight:bold;">SOLICITAR ACTIVACIÓN</a>
+        <p>Tu cuenta no está activa. Mensualidad: $10.000.</p>
+        <a id="link-pago" href="#" style="background:#00b894; color:white; padding:15px; border-radius:10px; text-decoration:none;">ACTIVAR MI MOTO</a>
     </div>
 
-    <div class="header">MODO MOTO ACTIVA<br><small>Vibras Positivas ©</small></div>
+    <div class="header">
+        <img src="image.png" alt="Logo">
+        <span>RUTA LOCAL - MOTO</span>
+    </div>
+
     <div class="container">
-        <div class="resumen">
-            <h3 id="count-entregas">Entregas Hoy: 0</h3>
-            <input type="text" id="miNombre" placeholder="Tu Nombre" style="width:80%; padding:8px; margin-bottom:5px;">
-            <input type="text" id="miPlaca" placeholder="Placa Moto" style="width:80%; padding:8px;">
+        <div style="background:#353b48; padding:15px; border-radius:15px; margin-bottom:15px;">
+            <input type="text" id="miNombre" placeholder="Tu Nombre">
+            <input type="text" id="miPlaca" placeholder="Placa">
         </div>
-
         <div id="tarjeta-pedido" class="alerta">
-            <h2 style="color:#e67e22; text-align:center;">¡HAY TRABAJO!</h2>
+            <h2 style="color:#e67e22;">¡NUEVO PEDIDO!</h2>
             <div id="info-pedido"></div>
-            <button id="btn-accion" class="btn" style="background:#00b894; color:white;" onclick="gestionar()">ACEPTAR RUTA</button>
+            <button id="btn-accion" style="background:#00b894; color:white; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; margin-top:10px;" onclick="gestionar()">ACEPTAR RUTA</button>
         </div>
-
-        <div class="historial" id="lista-h">Historial vacío...</div>
-        <button onclick="localStorage.removeItem('miHistorial'); location.reload();" style="color:#ff7675; background:none; border:none; margin-top:10px; cursor:pointer;">Limpiar historial</button>
+        <div id="lista-h" style="margin-top:20px; text-align:left; font-size:0.8rem;"></div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -58,49 +58,36 @@
 
         const inputNom = document.getElementById('miNombre');
         inputNom.value = localStorage.getItem('motoNom') || "";
-        document.getElementById('miPlaca').value = localStorage.getItem('motoPla') || "";
 
         function revisarPago() {
             if(!inputNom.value) return;
             db.collection("usuarios").doc(inputNom.value).get().then(doc => {
                 if(!doc.exists || doc.data().activo !== true) {
                     document.getElementById('pantalla-bloqueo').style.display = 'flex';
-                    document.getElementById('link-pago').href = "https://wa.me/57TU_NUMERO_AQUI?text=Hola, quiero activar mi moto: " + inputNom.value;
+                    document.getElementById('link-pago').href = "https://wa.me/57TU_WHATSAPP_AQUI?text=Activar Moto: " + inputNom.value;
                 }
             });
         }
         inputNom.addEventListener('change', () => { localStorage.setItem('motoNom', inputNom.value); revisarPago(); });
-        window.onload = () => { revisarPago(); mostrarH(); };
+        window.onload = revisarPago;
 
         db.collection("pedidos").where("estado", "==", "pendiente").onSnapshot(snap => {
             if(!snap.empty) {
-                const doc = snap.docs[0]; pedId = doc.id; datosPed = doc.data();
+                pedId = snap.docs[0].id; datosPed = snap.docs[0].data();
                 document.getElementById('tarjeta-pedido').style.display = 'block';
-                document.getElementById('info-pedido').innerHTML = `<b>Recoger:</b> ${datosPed.comercio}<br><b>Llevar:</b> ${datosPed.direccion}<br><b>Valor:</b> $${datosPed.valor}`;
+                document.getElementById('info-pedido').innerHTML = `<b>Recoger:</b> ${datosPed.comercio}<br><b>Dirección:</b> ${datosPed.direccion}`;
             } else { document.getElementById('tarjeta-pedido').style.display = 'none'; }
         });
 
         function gestionar() {
-            const nom = inputNom.value; const pla = document.getElementById('miPlaca').value;
-            if(!nom || !pla) return alert("Pon tu nombre y placa");
-            localStorage.setItem('motoPla', pla);
             const btn = document.getElementById('btn-accion');
             if(btn.innerText === "ACEPTAR RUTA") {
-                db.collection("pedidos").doc(pedId).update({ estado: "en_camino", moto_nombre: nom, placa: pla });
+                db.collection("pedidos").doc(pedId).update({ estado: "en_camino", moto_nombre: inputNom.value });
                 navigator.geolocation.watchPosition(p => { db.collection("ubicaciones").doc("moto_activa").set({ lat: p.coords.latitude, lng: p.coords.longitude }); });
-                btn.innerText = "ENTREGA FINALIZADA ✅"; btn.style.background = "#0984e3";
+                btn.innerText = "FINALIZAR ✅";
             } else {
-                let h = JSON.parse(localStorage.getItem('miHistorial')) || [];
-                h.unshift({ c: datosPed.comercio, v: datosPed.valor, h: new Date().toLocaleTimeString() });
-                localStorage.setItem('miHistorial', JSON.stringify(h));
                 db.collection("pedidos").doc(pedId).update({ estado: "completado" }).then(() => location.reload());
             }
-        }
-
-        function mostrarH() {
-            const h = JSON.parse(localStorage.getItem('miHistorial')) || [];
-            document.getElementById('count-entregas').innerText = "Entregas Hoy: " + h.length;
-            if(h.length > 0) document.getElementById('lista-h').innerHTML = h.map(i => `<div>${i.h} - ${i.c} ($${i.v})</div>`).join('');
         }
     </script>
 </body>
