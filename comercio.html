@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Comercio | RUTA LOCAL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --verde-vibras: #28a745;
+            --naranja-ruta: #f39c12;
+            --oscuro: #2c3e50;
+            --gris-fondo: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            background-color: var(--gris-fondo);
+        }
+
+        .header {
+            background-color: var(--oscuro);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        h2 { font-size: 1.2rem; color: var(--oscuro); margin-top: 0; }
+
+        label { display: block; font-size: 0.9rem; margin-bottom: 5px; color: #666; }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .btn-pedir {
+            background-color: var(--naranja-ruta);
+            color: white;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-pedir:hover { background-color: #e67e22; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: var(--verde-vibras);
+            color: white;
+            font-size: 0.7rem;
+            margin-bottom: 10px;
+        }
+
+        #map-simulado {
+            height: 150px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-size: 0.8rem;
+            border: 2px dashed #ccc;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <strong>RUTA LOCAL</strong> - Panel de Despacho
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="status-badge">4 Motos disponibles en Caucasia</div>
+            <h2>Solicitar Nuevo Domicilio</h2>
+            
+            <label>Dirección de Entrega</label>
+            <input type="text" placeholder="Ej: Barrio El Castillo, Calle 10 #..." id="direccion">
+
+            <label>¿Qué enviamos? (Referencia)</label>
+            <input type="text" placeholder="Ej: 2 Almuerzos, 1 bulto de Superarroz">
+
+            <label>Valor a cobrar al cliente</label>
+            <input type="number" placeholder="$ 0.00" id="valor">
+
+            <button class="btn-pedir" onclick="solicitarMoto()">SOLICITAR MOTO AHORA</button>
+        </div>
+
+        <div class="card">
+            <h2>Rastreo en tiempo real</h2>
+            <div id="map-simulado">
+                Cargando mapa de Caucasia con GPS...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function solicitarMoto() {
+            const dir = document.getElementById('direccion').value;
+            if(dir === "") {
+                alert("Socia, pon la dirección para que el moto no se pierda");
+            } else {
+                alert("¡Buscando la moto más cercana! VIBRAS POSITIVAS");
+            }
+        }
+    </script>
+
+</body>
+</html>
