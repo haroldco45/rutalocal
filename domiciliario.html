@@ -7,23 +7,63 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; margin: 0; background: #2d3436; color: white; text-align: center; }
-        .header { background: #00b894; padding: 20px; font-weight: bold; }
-        .alerta { background: white; color: #333; padding: 20px; border-radius: 15px; margin: 20px; display: none; }
-        .btn { width: 90%; padding: 15px; border-radius: 10px; border: none; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
+        .header { background: #00b894; padding: 20px; font-weight: bold; border-bottom: 4px solid #f39c12; }
+        .container { padding: 20px; max-width: 500px; margin: auto; }
+        .status-msg { font-size: 1.1rem; margin-top: 30px; color: #dfe6e9; }
+        
+        /* TARJETA DE ALERTA */
+        .alerta { 
+            background: white; 
+            color: #2d3436; 
+            padding: 25px; 
+            border-radius: 20px; 
+            margin-top: 20px; 
+            display: none; 
+            box-shadow: 0 10px 30px rgba(243, 156, 18, 0.4); 
+            text-align: left;
+            border: 2px solid #f39c12;
+        }
+        
+        .alerta h2 { text-align: center; color: #e67e22; margin-top: 0; }
+        .info-item { margin-bottom: 10px; font-size: 1rem; line-height: 1.4; }
+        .info-item b { color: #2c3e50; }
+        
+        .btn { 
+            width: 100%; 
+            padding: 18px; 
+            border-radius: 12px; 
+            border: none; 
+            font-weight: bold; 
+            font-size: 1.2rem; 
+            cursor: pointer; 
+            margin-top: 15px; 
+            transition: 0.3s;
+        }
+        
+        .btn-aceptar { background: #00b894; color: white; }
+        .btn-aceptar:active { transform: scale(0.95); }
+        .vibras-tag { color: #f39c12; font-size: 0.8rem; display: block; margin-top: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="header">MODO MOTO ACTIVA <br> <small>Vibras Positivas ©</small></div>
-    <div id="buscando">Buscando pedidos en Caucasia...</div>
-    <div id="caja-pedido" class="alerta">
-        <h2 style="color:#e67e22">¡NUEVO PEDIDO!</h2>
-        <p id="detalles"></p>
-        <button id="accion" class="btn btn-aceptar" style="background:#00b894; color:white;" onclick="gestionar()">ACEPTAR RUTA</button>
+    <div class="header">MODO MOTO ACTIVA<br><span class="vibras-tag">PROPIEDAD DE VIBRAS POSITIVAS ©</span></div>
+    
+    <div class="container">
+        <div id="status" class="status-msg">Esperando pedidos en Caucasia... 🛰️</div>
+        
+        <div id="tarjeta-pedido" class="alerta">
+            <h2>¡NUEVA RUTA!</h2>
+            <div id="info-pedido">
+                </div>
+            <button id="btn-accion" class="btn btn-aceptar" onclick="gestionar()">ACEPTAR RUTA</button>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
     <script>
+        // CONFIGURACIÓN DE TU FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyCCPMFCTXUvfzgW9zp-op9yl4JkhzRa_lI",
             authDomain: "ruta-local-caucasia-55f0b.firebaseapp.com",
@@ -34,36 +74,68 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        let pedidoId = "";
+        let pedidoActualId = "";
 
-        function activarGPS() {
-            navigator.geolocation.watchPosition(pos => {
-                db.collection("ubicaciones").doc("moto_activa").set({
-                    lat: pos.coords.latitude, lng: pos.coords.longitude, fecha: new Date()
-                });
-            }, null, { enableHighAccuracy: true });
+        // ACTIVAR RASTREO GPS
+        function iniciarRastreo() {
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(pos => {
+                    db.collection("ubicaciones").doc("moto_activa").set({
+                        lat: pos.coords.latitude,
+                        lng: pos.coords.longitude,
+                        ultima_vez: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }, err => console.error("Error GPS: ", err), { enableHighAccuracy: true });
+            } else {
+                alert("Socio, tu celular no soporta GPS o está desactivado.");
+            }
         }
 
+        // ESCUCHAR CUANDO UN COMERCIO PIDE MOTO
         db.collection("pedidos").where("estado", "==", "pendiente").onSnapshot(snap => {
-            snap.forEach(doc => {
-                pedidoId = doc.id;
+            if(!snap.empty) {
+                // Tomamos el pedido más reciente
+                const doc = snap.docs[0];
+                pedidoActualId = doc.id;
                 const p = doc.data();
-                document.getElementById('buscando').style.display = "none";
-                document.getElementById('caja-pedido').style.display = "block";
-                document.getElementById('detalles').innerHTML = `Dir: ${p.direccion}<br>Valor: $${p.valor}`;
-            });
+                
+                document.getElementById('status').style.display = "none";
+                document.getElementById('tarjeta-pedido').style.display = "block";
+                
+                document.getElementById('info-pedido').innerHTML = `
+                    <div class="info-item"><b>📍 RECOGER EN:</b><br> ${p.comercio}</div>
+                    <div class="info-item"><b>🏠 ENTREGAR EN:</b><br> ${p.direccion}</div>
+                    <div class="info-item"><b>📦 PRODUCTO:</b><br> ${p.producto || 'No especificado'}</div>
+                    <div class="info-item"><b>💵 COBRAR AL CLIENTE:</b><br> <span style="font-size:1.3rem; color:#00b894;">$${p.valor}</span></div>
+                `;
+            } else {
+                // Si no hay pedidos, volver al estado de espera
+                document.getElementById('status').style.display = "block";
+                document.getElementById('tarjeta-pedido').style.display = "none";
+            }
         });
 
+        // BOTÓN DE ACCIÓN (ACEPTAR / FINALIZAR)
         function gestionar() {
-            const btn = document.getElementById('accion');
+            const btn = document.getElementById('btn-accion');
+            
             if(btn.innerText === "ACEPTAR RUTA") {
-                db.collection("pedidos").doc(pedidoId).update({ estado: "en_camino" });
-                activarGPS();
-                btn.innerText = "ENTREGADO ✅";
-                btn.style.background = "#0984e3";
+                // Cambiar estado en Firebase para que nadie más lo vea
+                db.collection("pedidos").doc(pedidoActualId).update({ 
+                    estado: "en_camino" 
+                }).then(() => {
+                    iniciarRastreo(); // Empezar a mandar ubicación al Comercio
+                    btn.innerText = "ENTREGA FINALIZADA ✅";
+                    btn.style.background = "#0984e3";
+                });
             } else {
-                db.collection("pedidos").doc(pedidoId).update({ estado: "completado" });
-                location.reload();
+                // Marcar como entregado y limpiar para el siguiente
+                db.collection("pedidos").doc(pedidoActualId).update({ 
+                    estado: "completado" 
+                }).then(() => {
+                    alert("¡Excelente trabajo! Ruta completada. ✌️");
+                    location.reload(); // Recargar para esperar nuevo pedido
+                });
             }
         }
     </script>
