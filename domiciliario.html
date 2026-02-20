@@ -7,41 +7,65 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; margin: 0; background: #1a1a1a; color: white; }
-        .header { background: #28a745; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; }
+        .header { background: #28a745; padding: 15px; font-weight: bold; text-align: center; }
         .container { padding: 20px; }
         .status-card { background: #333; padding: 20px; border-radius: 15px; text-align: center; }
-        .btn-gps { background: white; color: black; padding: 10px; border-radius: 8px; border: none; margin-top: 10px; font-weight: bold; }
-        .pedido-alerta { background: white; color: #2c3e50; padding: 20px; border-radius: 15px; margin-top: 20px; border-left: 8px solid #f39c12; }
+        .pedido-card { background: white; color: #2c3e50; padding: 20px; border-radius: 15px; margin-top: 20px; display: none; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(243, 156, 18, 0); } 100% { box-shadow: 0 0 0 0 rgba(243, 156, 18, 0); } }
+        .btn-aceptar { width:100%; background:#28a745; color:white; border:none; padding:15px; border-radius:10px; font-weight:bold; cursor:pointer; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <span>RUTA LOCAL</span>
-        <span id="gps-status">GPS OFF</span>
-    </div>
+    <div class="header">RUTA LOCAL - CONDUCTOR</div>
     <div class="container">
         <div class="status-card">
-            <h3>Estado: <span style="color: #28a745;">Conectado</span></h3>
-            <button class="btn-gps" onclick="iniciarRastreo()">ACTIVAR GPS</button>
+            <h3>Esperando pedidos...</h3>
+            <p style="font-size: 0.8rem;">Toca la pantalla para activar el sonido</p>
         </div>
 
-        <div class="pedido-alerta">
-            <h4 style="margin:0">¡HAY UN PEDIDO!</h4>
-            <p style="font-size: 0.9rem">Restaurante Centro -> B. El Castillo</p>
-            <button style="width:100%; background:#28a745; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold;">ACEPTAR</button>
+        <div id="alerta" class="pedido-card">
+            <h2 style="margin:0; color:#f39c12">¡HAY TRABAJO!</h2>
+            <p id="info-pedido"></p>
+            <button class="btn-aceptar" onclick="aceptar()">ACEPTAR Y CAMELAR</button>
         </div>
     </div>
 
+    <audio id="audioNotif" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
     <script>
-        function iniciarRastreo() {
-            if (navigator.geolocation) {
-                navigator.geolocation.watchPosition(pos => {
-                    document.getElementById('gps-status').innerHTML = "GPS ON";
-                    document.getElementById('gps-status').style.color = "white";
-                    console.log("Lat: " + pos.coords.latitude + " Lng: " + pos.coords.longitude);
-                });
-                alert("GPS activado. ¡A camellar con Vibras Positivas!");
-            }
+        // PEGA AQUÍ LA MISMA CONFIGURACIÓN AZUL
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY",
+            authDomain: "TU_PROYECTO.firebaseapp.com",
+            projectId: "TU_PROYECTO_ID",
+            storageBucket: "TU_PROYECTO.appspot.com",
+            messagingSenderId: "TU_SENDER",
+            appId: "TU_APP_ID"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const audio = document.getElementById('audioNotif');
+
+        // Escuchar pedidos en tiempo real
+        db.collection("pedidos").where("estado", "==", "pendiente")
+        .onSnapshot((snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    const p = change.doc.data();
+                    document.getElementById('alerta').style.display = "block";
+                    document.getElementById('info-pedido').innerHTML = `<b>Destino:</b> ${p.direccion}<br><b>Valor:</b> $${p.valor}`;
+                    audio.play().catch(e => console.log("Esperando interacción del usuario para el sonido"));
+                }
+            });
+        });
+
+        function aceptar() {
+            alert("Servicio aceptado. ¡Vibras Positivas para esa ruta!");
+            document.getElementById('alerta').style.display = "none";
         }
     </script>
 </body>
