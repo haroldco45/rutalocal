@@ -6,6 +6,12 @@
     <title>RUTA LOCAL | Caucasia</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --color-principal: #f39c12;
+            --color-secundario: #00b894;
+            --color-oscuro: #1a1a1a;
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
@@ -13,87 +19,130 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            background: linear-gradient(135deg, #2c3e50 0%, #000000 100%);
+            min-height: 100vh;
+            background: radial-gradient(circle, #2c3e50 0%, #000000 100%);
             color: white;
             text-align: center;
         }
-        .logo-container {
-            margin-bottom: 30px;
+
+        .container {
+            width: 90%;
+            max-width: 450px;
+            padding: 20px;
         }
+
+        /* DISEÑO DEL LOGO Y MARCA */
+        .logo-box {
+            margin-bottom: 40px;
+        }
+
         .logo-text {
-            font-size: 2.5rem;
+            font-size: 3rem;
             font-weight: 700;
-            letter-spacing: -1px;
             margin: 0;
+            line-height: 1;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
         }
+
         .logo-text span {
-            color: #f39c12;
+            color: var(--color-principal);
         }
-        .vibras-tag {
-            font-size: 0.9rem;
-            color: #55efc4;
+
+        .vibras-brand {
+            font-size: 0.85rem;
+            color: var(--color-principal);
+            letter-spacing: 3px;
             font-weight: 600;
+            margin-top: 10px;
             text-transform: uppercase;
         }
-        .menu-container {
-            width: 90%;
-            max-width: 400px;
-        }
-        .btn-home {
-            display: block;
+
+        /* BOTONES DE ACCESO */
+        .btn-menu {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             text-decoration: none;
             color: white;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            margin: 15px 0;
-            border-radius: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             font-weight: 600;
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
+            font-size: 1.3rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(10px);
         }
-        .btn-home:hover {
-            background: #f39c12;
-            border-color: #f39c12;
-            transform: translateY(-5px);
+
+        .btn-menu span {
+            margin-right: 15px;
+            font-size: 1.8rem;
         }
+
         .btn-comercio:hover {
-            box-shadow: 0 10px 20px rgba(243, 156, 18, 0.3);
+            background: var(--color-principal);
+            border-color: var(--color-principal);
+            transform: scale(1.05);
+            box-shadow: 0 15px 30px rgba(243, 156, 18, 0.3);
         }
+
         .btn-moto:hover {
-            background: #00b894;
-            border-color: #00b894;
-            box-shadow: 0 10px 20px rgba(0, 184, 148, 0.3);
+            background: var(--color-secundario);
+            border-color: var(--color-secundario);
+            transform: scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 184, 148, 0.3);
         }
+
+        /* PIE DE PÁGINA Y DERECHOS */
         footer {
-            position: absolute;
-            bottom: 20px;
-            font-size: 0.8rem;
-            opacity: 0.6;
+            margin-top: 50px;
+            font-size: 0.75rem;
+            opacity: 0.8;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 20px;
+            width: 100%;
+        }
+
+        .copyright-vibras {
+            color: var(--color-principal);
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .gps-status {
+            font-size: 0.65rem;
+            color: #55efc4;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
-    <div class="logo-container">
-        <h1 class="logo-text">RUTA <span>LOCAL</span></h1>
-        <div class="vibras-tag">VIBRAS POSITIVAS ✌️</div>
-    </div>
+    <div class="container">
+        <div class="logo-box">
+            <h1 class="logo-text">RUTA<span>LOCAL</span></h1>
+            <div class="vibras-brand">VIBRAS POSITIVAS ✌️</div>
+        </div>
 
-    <div class="menu-container">
-        <a href="comercio.html" class="btn-home btn-comercio">
-            🏪 SOY COMERCIO
-        </a>
-        <a href="domiciliario.html" class="btn-home btn-moto">
-            🛵 SOY DOMICILIARIO
-        </a>
-    </div>
+        <div class="menu-nav">
+            <a href="comercio.html" class="btn-menu btn-comercio">
+                <span>🏪</span> SOY COMERCIO
+            </a>
+            
+            <a href="domiciliario.html" class="btn-menu btn-moto">
+                <span>🛵</span> SOY DOMICILIARIO
+            </a>
+        </div>
 
-    <footer>
-        Hecho en Caucasia para el mundo
-    </footer>
+        <div class="gps-status">🛰️ Sistema de Rastreo GPS Activo para Caucasia</div>
+
+        <footer>
+            <p>App desarrollada por <br> 
+            <span class="copyright-vibras">VIBRAS POSITIVAS © 2026</span><br>
+            Todos los derechos reservados.</p>
+        </footer>
+    </div>
 
 </body>
 </html>
