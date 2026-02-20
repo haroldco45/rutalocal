@@ -20,6 +20,7 @@
         .btn-naranja { background: #f39c12; color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
         .btn-wa { background: #00b894; color: white; padding: 12px; border-radius: 10px; text-decoration: none; display: inline-block; margin-top: 15px; font-size: 0.9rem; }
         #map { height: 200px; width: 100%; border-radius: 15px; }
+        h3 { margin-top: 0; color: #2c3e50; font-size: 1.1rem; }
     </style>
 </head>
 <body>
@@ -50,14 +51,15 @@
         
         <div class="container">
             <div class="card">
-                <h3>Solicitar Domicilio</h3>
-                <input type="text" id="dirCliente" placeholder="Dirección del Cliente">
-                <input type="text" id="ref" placeholder="¿Qué enviamos?">
-                <input type="number" id="val" placeholder="Valor a cobrar $">
+                <h3>Solicitar Domicilio 🛵</h3>
+                <input type="text" id="puntoRecogida" placeholder="📍 ¿Dónde recojo el producto?">
+                <input type="text" id="dirCliente" placeholder="🏁 Dirección de entrega">
+                <input type="text" id="ref" placeholder="📦 ¿Qué enviamos?">
+                <input type="number" id="val" placeholder="💰 Valor a cobrar $">
                 <button class="btn-naranja" onclick="enviarPedido()">PEDIR MOTO AHORA</button>
             </div>
             <div class="card">
-                <h3>🛵 Moto más cercana</h3>
+                <h3>🛵 Moto en camino</h3>
                 <div id="map"></div>
             </div>
         </div>
@@ -82,14 +84,11 @@
             const nombre = document.getElementById('nombreLocal').value.toLowerCase().trim();
             if(!nombre) { alert("Digita el nombre del negocio"); return; }
 
-            // Buscamos en Firebase
             db.collection("usuarios").doc(nombre).get().then(doc => {
                 if(doc.exists && doc.data().activo === true) {
-                    // SI PAGÓ: Guardamos sesión y mostramos panel
                     localStorage.setItem('miLocal', nombre);
                     entrarAlPanel(nombre);
                 } else {
-                    // NO PAGÓ o NO EXISTE: Mostramos error
                     document.getElementById('login-box').style.display = 'none';
                     document.getElementById('aviso-pago').style.display = 'block';
                 }
@@ -103,7 +102,6 @@
             inicializarMapa();
         }
 
-        // Si ya había entrado antes, que entre directo
         window.onload = () => {
             const guardado = localStorage.getItem('miLocal');
             if(guardado) { entrarAlPanel(guardado); }
@@ -111,15 +109,29 @@
 
         function enviarPedido() {
             const local = localStorage.getItem('miLocal');
+            const recogida = document.getElementById('puntoRecogida').value;
+            const destino = document.getElementById('dirCliente').value;
+            const producto = document.getElementById('ref').value;
+            const valor = document.getElementById('val').value;
+
+            if(!recogida || !destino || !producto || !valor) { 
+                alert("Por favor completa todos los campos de la ruta"); 
+                return; 
+            }
+
             db.collection("pedidos").add({
                 comercio: local,
-                direccion: document.getElementById('dirCliente').value,
-                valor: document.getElementById('val').value,
+                recogida: recogida,
+                direccion: destino,
+                producto: producto,
+                valor: valor,
                 estado: "pendiente",
                 fecha: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
-                alert("¡Pedido enviado! Ya le sale a los moteros.");
+                alert("¡Pedido enviado melo! La moto ya sabe a dónde ir.");
                 document.getElementById('dirCliente').value = "";
+                document.getElementById('puntoRecogida').value = "";
+                document.getElementById('ref').value = "";
                 document.getElementById('val').value = "";
             });
         }
