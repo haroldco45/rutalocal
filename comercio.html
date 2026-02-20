@@ -8,39 +8,59 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; margin: 0; background: #f4f7f6; }
+        /* Pantalla de Inicio / Bloqueo */
+        .bloqueo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; text-align: center; padding: 20px; box-sizing: border-box; }
+        .card-login { background: white; padding: 25px; border-radius: 20px; color: #2c3e50; width: 90%; max-width: 350px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        
         .header { background: #2c3e50; color: white; padding: 10px; text-align: center; border-bottom: 4px solid #f39c12; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .header img { width: 40px; border-radius: 5px; }
         .container { padding: 15px; max-width: 600px; margin: auto; }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        #map { height: 250px; width: 100%; border-radius: 15px; margin-top: 10px; }
-        input { width: 100%; padding: 12px; margin: 5px 0 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn-pedir { background: #f39c12; color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .bloqueo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; color: white; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; text-align: center; padding: 20px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
+        .btn-naranja { background: #f39c12; color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .btn-wa { background: #00b894; color: white; padding: 12px; border-radius: 10px; text-decoration: none; display: inline-block; margin-top: 15px; font-size: 0.9rem; }
+        #map { height: 200px; width: 100%; border-radius: 15px; }
     </style>
 </head>
 <body>
-    <div id="pantalla-bloqueo" class="bloqueo">
-        <img src="image.png" style="width:120px; margin-bottom:20px;">
-        <h1 style="color:#f39c12;">SUSCRIPCIÓN PENDIENTE 🛑</h1>
-        <p>Escribe al WhatsApp para activar tu comercio ($10.000 mensuales).</p>
-        <a href="https://wa.me/573127050012" style="background:#00b894; color:white; padding:15px 30px; border-radius:10px; text-decoration:none; font-weight:bold;">PAGAR POR WHATSAPP</a>
+
+    <div id="pantalla-acceso" class="bloqueo">
+        <img src="image.png" style="width:100px; margin-bottom:20px;">
+        <div class="card-login" id="login-box">
+            <h2 style="margin-top:0;">Bienvenido</h2>
+            <p>Digita el nombre de tu negocio para ingresar:</p>
+            <input type="text" id="nombreLocal" placeholder="Ej: Super Arroz">
+            <button class="btn-naranja" onclick="verificarNegocio()">ENTRAR A MI PANEL</button>
+        </div>
+        
+        <div id="aviso-pago" style="display:none; margin-top:20px;">
+            <h3 style="color:#ff7675;">SUSCRIPCIÓN INACTIVA 🛑</h3>
+            <p>Para activar este negocio en Ruta Local, por favor comunícate:</p>
+            <a href="https://wa.me/573127050012" class="btn-wa">HABLAR CON SOPORTE</a>
+            <br><br>
+            <button onclick="location.reload()" style="background:none; border:none; color:white; text-decoration:underline; cursor:pointer;">Intentar con otro nombre</button>
+        </div>
     </div>
 
-    <div class="header">
-        <img src="image.png" alt="Logo">
-        <span>RUTA LOCAL - COMERCIO</span>
-    </div>
-    
-    <div class="container">
-        <div class="card">
-            <input type="text" id="nombreLocal" placeholder="Nombre de tu Negocio">
-            <hr>
-            <input type="text" id="dirCliente" placeholder="Dirección Cliente">
-            <input type="text" id="ref" placeholder="¿Qué enviamos?">
-            <input type="number" id="val" placeholder="Cobro $">
-            <button class="btn-pedir" onclick="enviarPedido()">SOLICITAR MOTO</button>
+    <div id="panel-principal" style="display:none;">
+        <div class="header">
+            <img src="image.png">
+            <span id="titulo-negocio">RUTA LOCAL</span>
         </div>
-        <div class="card"><h3>📍 Moto en Vivo</h3><div id="map"></div></div>
+        
+        <div class="container">
+            <div class="card">
+                <h3>Solicitar Domicilio</h3>
+                <input type="text" id="dirCliente" placeholder="Dirección del Cliente">
+                <input type="text" id="ref" placeholder="¿Qué enviamos?">
+                <input type="number" id="val" placeholder="Valor a cobrar $">
+                <button class="btn-naranja" onclick="enviarPedido()">PEDIR MOTO AHORA</button>
+            </div>
+            <div class="card">
+                <h3>🛵 Moto más cercana</h3>
+                <div id="map"></div>
+            </div>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -57,36 +77,61 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        const inputLocal = document.getElementById('nombreLocal');
-        inputLocal.value = localStorage.getItem('miLocal') || "";
 
-        function revisarPago() {
-            if(!inputLocal.value) return;
-            db.collection("usuarios").doc(inputLocal.value.toLowerCase().trim()).get().then(doc => {
-                if(!doc.exists || doc.data().activo !== true) {
-                    document.getElementById('pantalla-bloqueo').style.display = 'flex';
+        function verificarNegocio() {
+            const nombre = document.getElementById('nombreLocal').value.toLowerCase().trim();
+            if(!nombre) { alert("Digita el nombre del negocio"); return; }
+
+            // Buscamos en Firebase
+            db.collection("usuarios").doc(nombre).get().then(doc => {
+                if(doc.exists && doc.data().activo === true) {
+                    // SI PAGÓ: Guardamos sesión y mostramos panel
+                    localStorage.setItem('miLocal', nombre);
+                    entrarAlPanel(nombre);
                 } else {
-                    document.getElementById('pantalla-bloqueo').style.display = 'none';
+                    // NO PAGÓ o NO EXISTE: Mostramos error
+                    document.getElementById('login-box').style.display = 'none';
+                    document.getElementById('aviso-pago').style.display = 'block';
                 }
-            });
+            }).catch(err => alert("Error de conexión: " + err));
         }
-        inputLocal.addEventListener('change', () => { 
-            localStorage.setItem('miLocal', inputLocal.value); 
-            revisarPago(); 
-        });
-        window.onload = revisarPago;
 
-        var map = L.map('map').setView([7.9865, -75.1976], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        var motoMarker = L.marker([7.9865, -75.1976]).addTo(map);
+        function entrarAlPanel(nombre) {
+            document.getElementById('pantalla-acceso').style.display = 'none';
+            document.getElementById('panel-principal').style.display = 'block';
+            document.getElementById('titulo-negocio').innerText = nombre.toUpperCase();
+            inicializarMapa();
+        }
+
+        // Si ya había entrado antes, que entre directo
+        window.onload = () => {
+            const guardado = localStorage.getItem('miLocal');
+            if(guardado) { entrarAlPanel(guardado); }
+        };
 
         function enviarPedido() {
+            const local = localStorage.getItem('miLocal');
             db.collection("pedidos").add({
-                comercio: inputLocal.value, direccion: document.getElementById('dirCliente').value,
-                valor: document.getElementById('val').value, estado: "pendiente", fecha: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => alert("Pedido solicitado ✌️"));
+                comercio: local,
+                direccion: document.getElementById('dirCliente').value,
+                valor: document.getElementById('val').value,
+                estado: "pendiente",
+                fecha: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                alert("¡Pedido enviado! Ya le sale a los moteros.");
+                document.getElementById('dirCliente').value = "";
+                document.getElementById('val').value = "";
+            });
         }
-        db.collection("ubicaciones").doc("moto_activa").onSnapshot(doc => { if(doc.exists) motoMarker.setLatLng([doc.data().lat, doc.data().lng]); });
+
+        function inicializarMapa() {
+            var map = L.map('map').setView([7.9865, -75.1976], 14);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            var motoMarker = L.marker([7.9865, -75.1976]).addTo(map);
+            db.collection("ubicaciones").doc("moto_activa").onSnapshot(doc => { 
+                if(doc.exists) motoMarker.setLatLng([doc.data().lat, doc.data().lng]); 
+            });
+        }
     </script>
 </body>
 </html>
