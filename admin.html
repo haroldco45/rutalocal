@@ -7,27 +7,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; background: #1e272e; color: white; padding: 20px; text-align: center; }
-        .card { background: #2f3640; padding: 20px; border-radius: 15px; max-width: 400px; margin: auto; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; box-sizing: border-box; text-align: center; }
-        .btn-activar { background: #00b894; color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-desactivar { background: #ff7675; color: white; width: 100%; padding: 10px; border: none; border-radius: 10px; margin-top: 20px; cursor: pointer; font-size: 0.8rem; }
-        .vibras { color: #f39c12; font-weight: bold; margin-bottom: 20px; display: block; }
+        .card { background: #2f3640; padding: 20px; border-radius: 15px; max-width: 400px; margin: auto; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; text-align: center; }
+        .btn { width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; }
     </style>
 </head>
 <body>
-    <img src="image.png" style="width: 80px; margin-bottom: 10px;">
-    <span class="vibras">PANEL ADMINISTRADORA ✌️</span>
-
+    <img src="image.png" style="width: 80px; margin-bottom: 20px;">
     <div class="card">
-        <h3>Activar Usuario</h3>
-        <p style="font-size: 0.8rem; opacity: 0.8;">Escribe el nombre tal cual aparece en la App</p>
-        
-        <input type="password" id="pass" placeholder="Contraseña Maestra">
-        <hr style="opacity: 0.1;">
-        <input type="text" id="usuarioNom" placeholder="Nombre del Comercio o Moto">
-        
-        <button class="btn-activar" onclick="cambiarEstado(true)">ACTIVAR ACCESO ✅</button>
-        <button class="btn-desactivar" onclick="cambiarEstado(false)">BLOQUEAR ACCESO 🛑</button>
+        <h3>Activar Comercio o Moto</h3>
+        <input type="password" id="pass" placeholder="Clave Maestra">
+        <input type="text" id="user" placeholder="Nombre exacto">
+        <button class="btn" style="background:#00b894; color:white;" onclick="activar(true)">ACTIVAR ACCESO</button>
+        <button class="btn" style="background:#ff7675; color:white; margin-top:10px;" onclick="activar(false)">BLOQUEAR</button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -44,32 +36,11 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // AQUÍ PONES TU CONTRASEÑA SECRETA
-        const CLAVE_MAESTRA = "vibras2026"; 
-
-        function cambiarEstado(estado) {
-            const pass = document.getElementById('pass').value;
-            const nombre = document.getElementById('usuarioNom').value;
-
-            if(pass !== CLAVE_MAESTRA) {
-                alert("¡Contraseña incorrecta, socia!");
-                return;
-            }
-
-            if(!nombre) {
-                alert("Escribe el nombre del usuario");
-                return;
-            }
-
-            db.collection("usuarios").doc(nombre).set({
-                activo: estado,
-                fecha_pago: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true })
-            .then(() => {
-                alert("¡Listo! " + nombre + (estado ? " ACTIVADO" : " BLOQUEADO"));
-                document.getElementById('usuarioNom').value = "";
-            })
-            .catch(err => alert("Error: " + err));
+        function activar(estado) {
+            if(document.getElementById('pass').value !== "vibras2026") return alert("Clave mal");
+            const nombre = document.getElementById('user').value.toLowerCase();
+            db.collection("usuarios").doc(nombre).set({ activo: estado }, { merge: true })
+            .then(() => alert(nombre + " Actualizado! ✌️"));
         }
     </script>
 </body>
