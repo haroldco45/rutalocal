@@ -19,12 +19,13 @@
         .btn-wa { background: #00b894; color: white; padding: 12px; border-radius: 10px; text-decoration: none; display: inline-block; margin-top: 15px; font-size: 0.9rem; }
         #map { height: 200px; width: 100%; border-radius: 15px; }
         h3 { margin-top: 0; color: #2c3e50; font-size: 1.1rem; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.8rem; }
         th { text-align: left; color: #7f8c8d; border-bottom: 1px solid #eee; padding: 5px; }
         td { padding: 8px 5px; border-bottom: 1px solid #fafafa; color: #2c3e50; }
-        .badge { padding: 2px 6px; border-radius: 5px; font-size: 0.7rem; font-weight: bold; }
+        .badge { padding: 2px 6px; border-radius: 5px; font-size: 0.65rem; font-weight: bold; display: inline-block; }
         .ok { background: #d1f2eb; color: #16a085; }
         .wait { background: #fef5e7; color: #d35400; }
+        .moto { background: #ebf5fb; color: #2980b9; }
     </style>
 </head>
 <body>
@@ -63,7 +64,7 @@
 
             <div class="card">
                 <h3>📋 Mis Despachos de Hoy</h3>
-                <div id="historial-comercio">Cargando historial...</div>
+                <div id="historial-comercio">Buscando registros...</div>
             </div>
 
             <div class="card">
@@ -142,18 +143,28 @@
 
         function cargarHistorialComercio() {
             const local = localStorage.getItem('miLocal');
+            // Quitamos el orderBy y el limit temporalmente para que cargue sin errores de índice
             db.collection("pedidos")
                 .where("comercio", "==", local)
-                .orderBy("fecha", "desc")
-                .limit(10)
                 .onSnapshot(snap => {
+                    if (snap.empty) {
+                        document.getElementById('historial-comercio').innerHTML = "<p style='opacity:0.5;'>No hay pedidos hoy.</p>";
+                        return;
+                    }
                     let html = "<table><tr><th>Destino</th><th>Valor</th><th>Estado</th></tr>";
                     snap.forEach(doc => {
                         const d = doc.data();
-                        const status = d.estado === 'completado' ? '<span class="badge ok">ENTREGADO</span>' : '<span class="badge wait">EN CURSO</span>';
-                        html += `<tr><td>${d.direccion}</td><td>$${d.valor}</td><td>${status}</td></tr>`;
+                        let statusBadge = '';
+                        if(d.estado === 'completado') statusBadge = '<span class="badge ok">ENTREGADO</span>';
+                        else if(d.estado === 'en_camino') statusBadge = '<span class="badge moto">EN MOTO</span>';
+                        else statusBadge = '<span class="badge wait">PENDIENTE</span>';
+                        
+                        html += `<tr><td>${d.direccion}</td><td>$${d.valor}</td><td>${statusBadge}</td></tr>`;
                     });
                     document.getElementById('historial-comercio').innerHTML = html + "</table>";
+                }, err => {
+                    console.error(err);
+                    document.getElementById('historial-comercio').innerHTML = "Error al cargar historial.";
                 });
         }
 
