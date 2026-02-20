@@ -7,21 +7,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; margin: 0; background: #2d3436; color: white; text-align: center; }
-        
-        /* Pantalla de Acceso */
         .bloqueo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2d3436; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 20px; box-sizing: border-box; }
         .card-login { background: white; padding: 25px; border-radius: 20px; color: #2c3e50; width: 90%; max-width: 350px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        
         .header { background: #00b894; padding: 10px; font-weight: bold; border-bottom: 4px solid #f39c12; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .header img { width: 40px; border-radius: 5px; }
-        
         .container { padding: 15px; max-width: 500px; margin: auto; }
         .alerta { background: white; color: #2d3436; padding: 20px; border-radius: 20px; display: none; border: 3px solid #f39c12; text-align: left; margin-top: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        
+        .card-informe { background: #34495e; color: white; padding: 20px; border-radius: 15px; margin-top: 20px; text-align: left; }
         input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-family: inherit; }
         .btn-verde { background: #00b894; color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
         .btn-wa { background: #f39c12; color: white; padding: 12px; border-radius: 10px; text-decoration: none; display: inline-block; margin-top: 15px; }
         hr { opacity: 0.1; margin: 10px 0; }
+        .detalle-entrega { font-size: 0.8rem; border-bottom: 1px solid #455a64; padding: 5px 0; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
@@ -35,13 +32,12 @@
             <input type="text" id="miPlaca" placeholder="Tu Placa (Ej: UPK414)">
             <button class="btn-verde" onclick="verificarMoto()">ACTIVAR RADAR 🛵</button>
         </div>
-        
         <div id="aviso-pago" style="display:none; margin-top:20px;">
             <h3 style="color:#f39c12;">MOTO INACTIVA 🛑</h3>
             <p>Aún no estás autorizado para recibir pedidos hoy.</p>
             <a href="https://wa.me/57311770431" class="btn-wa">SOLICITAR ACCESO</a>
             <br><br>
-            <button onclick="location.reload()" style="background:none; border:none; color:white; text-decoration:underline; cursor:pointer;">Probar con otro nombre</button>
+            <button onclick="location.reload()" style="background:none; border:none; color:white; text-decoration:underline; cursor:pointer;">Probar de nuevo</button>
         </div>
     </div>
 
@@ -54,12 +50,19 @@
         <div class="container">
             <div id="tarjeta-pedido" class="alerta">
                 <h2 style="color:#e67e22; text-align:center; margin-top:0;">¡HAY RUTA! 🏁</h2>
-                <div id="info-pedido">
-                    </div>
+                <div id="info-pedido"></div>
                 <button id="btn-accion" class="btn-verde" style="margin-top:15px;" onclick="gestionar()">ACEPTAR RUTA</button>
             </div>
             
-            <p id="esperando" style="margin-top:50px; opacity:0.6;">Buscando pedidos en Caucasia... 📡</p>
+            <p id="esperando" style="margin-top:30px; opacity:0.6;">Buscando pedidos en Caucasia... 📡</p>
+
+            <div class="card-informe">
+                <h3 style="margin:0; color:#00b894;">💰 Mi Producción Hoy</h3>
+                <p id="total-carreras" style="font-size: 1.4rem; font-weight: bold; margin: 5px 0;">0 Carreras</p>
+                <div id="lista-entregas">
+                    <p style="opacity:0.5; font-size:0.8rem;">No has completado entregas hoy.</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -81,9 +84,7 @@
         function verificarMoto() {
             const nombre = document.getElementById('miNombre').value.toLowerCase().trim();
             const placa = document.getElementById('miPlaca').value.toUpperCase().trim();
-
             if(!nombre || !placa) { alert("Nombre y placa son obligatorios"); return; }
-
             db.collection("usuarios").doc(nombre).get().then(doc => {
                 if(doc.exists && doc.data().activo === true) {
                     localStorage.setItem('motoNom', nombre);
@@ -93,7 +94,7 @@
                     document.getElementById('login-box').style.display = 'none';
                     document.getElementById('aviso-pago').style.display = 'block';
                 }
-            }).catch(err => alert("Error: " + err));
+            });
         }
 
         function entrarAlRadar(nombre) {
@@ -101,6 +102,7 @@
             document.getElementById('panel-pedidos').style.display = 'block';
             document.getElementById('nombre-display').innerText = nombre.toUpperCase();
             escucharPedidos();
+            cargarMisEntregas();
         }
 
         window.onload = () => {
@@ -112,18 +114,17 @@
             db.collection("pedidos").where("estado", "==", "pendiente").onSnapshot(snap => {
                 if(!snap.empty) {
                     pId = snap.docs[0].id;
-                    const datos = snap.docs[0].data();
+                    const d = snap.docs[0].data();
                     document.getElementById('tarjeta-pedido').style.display = 'block';
                     document.getElementById('esperando').style.display = 'none';
-                    
                     document.getElementById('info-pedido').innerHTML = `
-                        <p><strong>🏢 COMERCIO:</strong> ${datos.comercio.toUpperCase()}</p>
+                        <p><strong>🏢 COMERCIO:</strong> ${d.comercio.toUpperCase()}</p>
                         <hr>
-                        <p><strong>📍 RECOGER EN:</strong><br><span style="color:#2c3e50; font-size:1.1rem;">${datos.recogida || 'Ver en comercio'}</span></p>
-                        <p><strong>🏁 LLEVAR A:</strong><br><span style="color:#2c3e50; font-size:1.1rem;">${datos.direccion}</span></p>
+                        <p><strong>📍 RECOGER EN:</strong><br><span style="color:#2c3e50;">${d.recogida}</span></p>
+                        <p><strong>🏁 LLEVAR A:</strong><br><span style="color:#2c3e50;">${d.direccion}</span></p>
                         <hr>
-                        <p><strong>📦 PRODUCTO:</strong> ${datos.producto || 'No especificado'}</p>
-                        <p><strong>💰 COBRO:</strong> <span style="color:#00b894; font-size:1.2rem; font-weight:bold;">$${datos.valor}</span></p>
+                        <p><strong>📦 PRODUCTO:</strong> ${d.producto}</p>
+                        <p><strong>💰 COBRO:</strong> <span style="color:#00b894; font-size:1.2rem; font-weight:bold;">$${d.valor}</span></p>
                     `;
                 } else {
                     document.getElementById('tarjeta-pedido').style.display = 'none';
@@ -132,29 +133,43 @@
             });
         }
 
+        function cargarMisEntregas() {
+            const moto = localStorage.getItem('motoNom');
+            db.collection("pedidos")
+                .where("moto_nombre", "==", moto)
+                .where("estado", "==", "completado")
+                .orderBy("fecha", "desc")
+                .onSnapshot(snap => {
+                    document.getElementById('total-carreras').innerText = snap.size + " Carreras";
+                    let html = "";
+                    snap.forEach(doc => {
+                        const d = doc.data();
+                        html += `<div class="detalle-entrega"><span>🏁 ${d.direccion}</span> <span>$${d.valor}</span></div>`;
+                    });
+                    if(snap.size > 0) document.getElementById('lista-entregas').innerHTML = html;
+                });
+        }
+
         function gestionar() {
             const btn = document.getElementById('btn-accion');
             const moto = localStorage.getItem('motoNom');
             const placa = localStorage.getItem('motoPlaca');
-
             if(btn.innerText === "ACEPTAR RUTA") {
                 db.collection("pedidos").doc(pId).update({ 
-                    estado: "en_camino", 
-                    moto_nombre: moto,
-                    moto_placa: placa 
+                    estado: "en_camino", moto_nombre: moto, moto_placa: placa 
                 });
-                
                 navigator.geolocation.watchPosition(p => { 
                     db.collection("ubicaciones").doc("moto_activa").set({ 
-                        lat: p.coords.latitude, 
-                        lng: p.coords.longitude,
-                        nombre: moto 
+                        lat: p.coords.latitude, lng: p.coords.longitude, nombre: moto 
                     }); 
                 });
                 btn.innerText = "FINALIZAR ENTREGA ✅";
             } else {
                 db.collection("pedidos").doc(pId).update({ estado: "completado" })
-                .then(() => location.reload());
+                .then(() => {
+                    alert("¡Entrega finalizada! Sumaste una carrera.");
+                    location.reload();
+                });
             }
         }
     </script>
