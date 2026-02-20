@@ -8,10 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; margin: 0; background: #f4f7f6; }
-        /* Pantalla de Inicio / Bloqueo */
         .bloqueo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; text-align: center; padding: 20px; box-sizing: border-box; }
         .card-login { background: white; padding: 25px; border-radius: 20px; color: #2c3e50; width: 90%; max-width: 350px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        
         .header { background: #2c3e50; color: white; padding: 10px; text-align: center; border-bottom: 4px solid #f39c12; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .header img { width: 40px; border-radius: 5px; }
         .container { padding: 15px; max-width: 600px; margin: auto; }
@@ -21,6 +19,12 @@
         .btn-wa { background: #00b894; color: white; padding: 12px; border-radius: 10px; text-decoration: none; display: inline-block; margin-top: 15px; font-size: 0.9rem; }
         #map { height: 200px; width: 100%; border-radius: 15px; }
         h3 { margin-top: 0; color: #2c3e50; font-size: 1.1rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+        th { text-align: left; color: #7f8c8d; border-bottom: 1px solid #eee; padding: 5px; }
+        td { padding: 8px 5px; border-bottom: 1px solid #fafafa; color: #2c3e50; }
+        .badge { padding: 2px 6px; border-radius: 5px; font-size: 0.7rem; font-weight: bold; }
+        .ok { background: #d1f2eb; color: #16a085; }
+        .wait { background: #fef5e7; color: #d35400; }
     </style>
 </head>
 <body>
@@ -29,17 +33,16 @@
         <img src="image.png" style="width:100px; margin-bottom:20px;">
         <div class="card-login" id="login-box">
             <h2 style="margin-top:0;">Bienvenido</h2>
-            <p>Digita el nombre de tu negocio para ingresar:</p>
+            <p>Digita el nombre de tu negocio:</p>
             <input type="text" id="nombreLocal" placeholder="Ej: Super Arroz">
             <button class="btn-naranja" onclick="verificarNegocio()">ENTRAR A MI PANEL</button>
         </div>
-        
         <div id="aviso-pago" style="display:none; margin-top:20px;">
             <h3 style="color:#ff7675;">SUSCRIPCIÓN INACTIVA 🛑</h3>
-            <p>Para activar este negocio en Ruta Local, por favor comunícate:</p>
+            <p>Comunícate para activar tu negocio:</p>
             <a href="https://wa.me/573117700431" class="btn-wa">HABLAR CON SOPORTE</a>
             <br><br>
-            <button onclick="location.reload()" style="background:none; border:none; color:white; text-decoration:underline; cursor:pointer;">Intentar con otro nombre</button>
+            <button onclick="location.reload()" style="background:none; border:none; color:white; text-decoration:underline; cursor:pointer;">Intentar de nuevo</button>
         </div>
     </div>
 
@@ -48,7 +51,6 @@
             <img src="image.png">
             <span id="titulo-negocio">RUTA LOCAL</span>
         </div>
-        
         <div class="container">
             <div class="card">
                 <h3>Solicitar Domicilio 🛵</h3>
@@ -58,6 +60,12 @@
                 <input type="number" id="val" placeholder="💰 Valor a cobrar $">
                 <button class="btn-naranja" onclick="enviarPedido()">PEDIR MOTO AHORA</button>
             </div>
+
+            <div class="card">
+                <h3>📋 Mis Despachos de Hoy</h3>
+                <div id="historial-comercio">Cargando historial...</div>
+            </div>
+
             <div class="card">
                 <h3>🛵 Moto en camino</h3>
                 <div id="map"></div>
@@ -82,8 +90,7 @@
 
         function verificarNegocio() {
             const nombre = document.getElementById('nombreLocal').value.toLowerCase().trim();
-            if(!nombre) { alert("Digita el nombre del negocio"); return; }
-
+            if(!nombre) { alert("Digita el nombre"); return; }
             db.collection("usuarios").doc(nombre).get().then(doc => {
                 if(doc.exists && doc.data().activo === true) {
                     localStorage.setItem('miLocal', nombre);
@@ -92,7 +99,7 @@
                     document.getElementById('login-box').style.display = 'none';
                     document.getElementById('aviso-pago').style.display = 'block';
                 }
-            }).catch(err => alert("Error de conexión: " + err));
+            });
         }
 
         function entrarAlPanel(nombre) {
@@ -100,6 +107,7 @@
             document.getElementById('panel-principal').style.display = 'block';
             document.getElementById('titulo-negocio').innerText = nombre.toUpperCase();
             inicializarMapa();
+            cargarHistorialComercio();
         }
 
         window.onload = () => {
@@ -109,31 +117,44 @@
 
         function enviarPedido() {
             const local = localStorage.getItem('miLocal');
-            const recogida = document.getElementById('puntoRecogida').value;
-            const destino = document.getElementById('dirCliente').value;
-            const producto = document.getElementById('ref').value;
-            const valor = document.getElementById('val').value;
+            const rec = document.getElementById('puntoRecogida').value;
+            const dir = document.getElementById('dirCliente').value;
+            const prod = document.getElementById('ref').value;
+            const val = document.getElementById('val').value;
 
-            if(!recogida || !destino || !producto || !valor) { 
-                alert("Por favor completa todos los campos de la ruta"); 
-                return; 
-            }
+            if(!rec || !dir || !prod || !val) { alert("Completa los datos"); return; }
 
             db.collection("pedidos").add({
                 comercio: local,
-                recogida: recogida,
-                direccion: destino,
-                producto: producto,
-                valor: valor,
+                recogida: rec,
+                direccion: dir,
+                producto: prod,
+                valor: val,
                 estado: "pendiente",
                 fecha: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
-                alert("¡Pedido enviado melo! La moto ya sabe a dónde ir.");
+                alert("¡Pedido enviado!");
                 document.getElementById('dirCliente').value = "";
-                document.getElementById('puntoRecogida').value = "";
                 document.getElementById('ref').value = "";
                 document.getElementById('val').value = "";
             });
+        }
+
+        function cargarHistorialComercio() {
+            const local = localStorage.getItem('miLocal');
+            db.collection("pedidos")
+                .where("comercio", "==", local)
+                .orderBy("fecha", "desc")
+                .limit(10)
+                .onSnapshot(snap => {
+                    let html = "<table><tr><th>Destino</th><th>Valor</th><th>Estado</th></tr>";
+                    snap.forEach(doc => {
+                        const d = doc.data();
+                        const status = d.estado === 'completado' ? '<span class="badge ok">ENTREGADO</span>' : '<span class="badge wait">EN CURSO</span>';
+                        html += `<tr><td>${d.direccion}</td><td>$${d.valor}</td><td>${status}</td></tr>`;
+                    });
+                    document.getElementById('historial-comercio').innerHTML = html + "</table>";
+                });
         }
 
         function inicializarMapa() {
