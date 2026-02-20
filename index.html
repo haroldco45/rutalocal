@@ -4,26 +4,96 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RUTA LOCAL | Caucasia</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --verde: #28a745; --naranja: #f39c12; --oscuro: #2c3e50; }
-        body { font-family: 'Poppins', sans-serif; margin: 0; background-color: #f4f7f6; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-        .container { text-align: center; padding: 30px; max-width: 400px; width: 90%; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .logo-container img { width: 180px; margin-bottom: 10px; }
-        .btn { display: block; width: 100%; padding: 15px; margin-bottom: 15px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; text-decoration: none; box-sizing: border-box; transition: 0.3s; }
-        .btn-comercio { background: var(--oscuro); color: white; }
-        .btn-moto { background: var(--verde); color: white; }
-        .footer { margin-top: 20px; font-size: 0.8rem; font-weight: bold; color: var(--verde); }
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #2c3e50 0%, #000000 100%);
+            color: white;
+            text-align: center;
+        }
+        .logo-container {
+            margin-bottom: 30px;
+        }
+        .logo-text {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin: 0;
+        }
+        .logo-text span {
+            color: #f39c12;
+        }
+        .vibras-tag {
+            font-size: 0.9rem;
+            color: #55efc4;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .menu-container {
+            width: 90%;
+            max-width: 400px;
+        }
+        .btn-home {
+            display: block;
+            text-decoration: none;
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        .btn-home:hover {
+            background: #f39c12;
+            border-color: #f39c12;
+            transform: translateY(-5px);
+        }
+        .btn-comercio:hover {
+            box-shadow: 0 10px 20px rgba(243, 156, 18, 0.3);
+        }
+        .btn-moto:hover {
+            background: #00b894;
+            border-color: #00b894;
+            box-shadow: 0 10px 20px rgba(0, 184, 148, 0.3);
+        }
+        footer {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo-container"><img src="image.png" alt="Logo"></div>
-        <h1>RUTA LOCAL</h1>
-        <p>La revolución del domicilio en Caucasia.</p>
-        <a href="comercio.html" class="btn btn-comercio">SOY COMERCIANTE</a>
-        <a href="domiciliario.html" class="btn btn-moto">SOY DOMICILIARIO</a>
-        <div class="footer">VIBRAS POSITIVAS 2026</div>
+
+    <div class="logo-container">
+        <h1 class="logo-text">RUTA <span>LOCAL</span></h1>
+        <div class="vibras-tag">VIBRAS POSITIVAS ✌️</div>
     </div>
+
+    <div class="menu-container">
+        <a href="comercio.html" class="btn-home btn-comercio">
+            🏪 SOY COMERCIO
+        </a>
+        <a href="domiciliario.html" class="btn-home btn-moto">
+            🛵 SOY DOMICILIARIO
+        </a>
+    </div>
+
+    <footer>
+        Hecho en Caucasia para el mundo
+    </footer>
+
 </body>
 </html>
