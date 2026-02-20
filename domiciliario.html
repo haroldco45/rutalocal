@@ -9,51 +9,36 @@
         body { font-family: 'Poppins', sans-serif; margin: 0; background: #2d3436; color: white; text-align: center; }
         .header { background: #00b894; padding: 15px; font-weight: bold; border-bottom: 4px solid #f39c12; }
         .container { padding: 15px; max-width: 500px; margin: auto; }
-        
-        /* RESUMEN DE GANANCIAS */
-        .resumen-hoy { background: #353b48; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #f39c12; }
-        .resumen-hoy h3 { margin: 0; font-size: 0.9rem; color: #f39c12; text-transform: uppercase; }
-        .total-valor { font-size: 1.8rem; color: #55efc4; font-weight: bold; margin: 5px 0; }
-        
-        .card-moto { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; margin-bottom: 15px; }
-        input { width: 90%; padding: 8px; margin: 5px 0; border-radius: 5px; border: none; text-align: center; }
-        
-        /* ALERTA */
-        .alerta { background: white; color: #2d3436; padding: 20px; border-radius: 20px; display: none; text-align: left; border: 3px solid #f39c12; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(243, 156, 18, 0); } 100% { box-shadow: 0 0 0 0 rgba(243, 156, 18, 0); } }
-        
-        .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 10px; }
-        .btn-aceptar { background: #00b894; color: white; }
-
-        /* LISTA DE HISTORIAL */
-        .historial-lista { margin-top: 20px; text-align: left; max-height: 250px; overflow-y: auto; padding-right: 5px; }
-        .item-h { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 0.8rem; border-left: 4px solid #f39c12; }
+        .resumen { background: #353b48; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #f39c12; }
+        .alerta { background: white; color: #2d3436; padding: 20px; border-radius: 20px; display: none; text-align: left; border: 3px solid #f39c12; }
+        .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .bloqueo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2d3436; color: white; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 20px; box-sizing: border-box; }
+        .historial { text-align: left; margin-top: 20px; font-size: 0.8rem; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; }
     </style>
 </head>
 <body>
-    <div class="header">RUTA LOCAL - MOTO<br><small>Vibras Positivas ©</small></div>
-    
-    <div class="container">
-        <div class="resumen-hoy">
-            <h3>Entregas de hoy</h3>
-            <div class="total-valor" id="count-entregas">0</div>
-            <div id="status">Buscando pedidos... 🛰️</div>
-        </div>
+    <div id="pantalla-bloqueo" class="bloqueo">
+        <h1 style="color:#f39c12;">SUSCRIPCIÓN MOTO 🛑</h1>
+        <p>Tu acceso a RUTA LOCAL está inactivo. El costo mensual es de $10.000.</p>
+        <a id="link-pago" href="#" style="background:#00b894; color:white; padding:15px; border-radius:10px; text-decoration:none; font-weight:bold;">SOLICITAR ACTIVACIÓN</a>
+    </div>
 
-        <div class="card-moto">
-            <input type="text" id="miNombre" placeholder="Tu Nombre">
-            <input type="text" id="miPlaca" placeholder="Placa">
+    <div class="header">MODO MOTO ACTIVA<br><small>Vibras Positivas ©</small></div>
+    <div class="container">
+        <div class="resumen">
+            <h3 id="count-entregas">Entregas Hoy: 0</h3>
+            <input type="text" id="miNombre" placeholder="Tu Nombre" style="width:80%; padding:8px; margin-bottom:5px;">
+            <input type="text" id="miPlaca" placeholder="Placa Moto" style="width:80%; padding:8px;">
         </div>
 
         <div id="tarjeta-pedido" class="alerta">
-            <h2 style="text-align:center; margin:0; color:#e67e22;">¡NUEVO PEDIDO!</h2>
-            <hr>
-            <div id="info-pedido" style="margin: 10px 0;"></div>
-            <button id="btn-accion" class="btn btn-aceptar" onclick="gestionar()">ACEPTAR RUTA</button>
+            <h2 style="color:#e67e22; text-align:center;">¡HAY TRABAJO!</h2>
+            <div id="info-pedido"></div>
+            <button id="btn-accion" class="btn" style="background:#00b894; color:white;" onclick="gestionar()">ACEPTAR RUTA</button>
         </div>
 
-        <div class="historial-lista" id="lista-h"></div>
-        <button onclick="borrarH()" style="background:none; border:none; color:#ff7675; font-size:0.7rem; margin-top:15px; cursor:pointer;">Limpiar historial</button>
+        <div class="historial" id="lista-h">Historial vacío...</div>
+        <button onclick="localStorage.removeItem('miHistorial'); location.reload();" style="color:#ff7675; background:none; border:none; margin-top:10px; cursor:pointer;">Limpiar historial</button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -69,84 +54,53 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        let pedidoId = "";
-        let datosPedidoActual = null;
+        let pedId = ""; let datosPed = null;
 
-        // Cargar datos al iniciar
-        document.getElementById('miNombre').value = localStorage.getItem('motoNom') || "";
+        const inputNom = document.getElementById('miNombre');
+        inputNom.value = localStorage.getItem('motoNom') || "";
         document.getElementById('miPlaca').value = localStorage.getItem('motoPla') || "";
-        mostrarHistorial();
 
-        // Escuchar pedidos
+        function revisarPago() {
+            if(!inputNom.value) return;
+            db.collection("usuarios").doc(inputNom.value).get().then(doc => {
+                if(!doc.exists || doc.data().activo !== true) {
+                    document.getElementById('pantalla-bloqueo').style.display = 'flex';
+                    document.getElementById('link-pago').href = "https://wa.me/57TU_NUMERO_AQUI?text=Hola, quiero activar mi moto: " + inputNom.value;
+                }
+            });
+        }
+        inputNom.addEventListener('change', () => { localStorage.setItem('motoNom', inputNom.value); revisarPago(); });
+        window.onload = () => { revisarPago(); mostrarH(); };
+
         db.collection("pedidos").where("estado", "==", "pendiente").onSnapshot(snap => {
             if(!snap.empty) {
-                const doc = snap.docs[0]; 
-                pedidoId = doc.id; 
-                datosPedidoActual = doc.data();
-                document.getElementById('tarjeta-pedido').style.display = "block";
-                document.getElementById('info-pedido').innerHTML = `
-                    <b>Recoger:</b> ${datosPedidoActual.comercio}<br>
-                    <b>Entregar:</b> ${datosPedidoActual.direccion}<br>
-                    <b>Valor:</b> $${datosPedidoActual.valor}
-                `;
-            } else {
-                document.getElementById('tarjeta-pedido').style.display = "none";
-            }
+                const doc = snap.docs[0]; pedId = doc.id; datosPed = doc.data();
+                document.getElementById('tarjeta-pedido').style.display = 'block';
+                document.getElementById('info-pedido').innerHTML = `<b>Recoger:</b> ${datosPed.comercio}<br><b>Llevar:</b> ${datosPed.direccion}<br><b>Valor:</b> $${datosPed.valor}`;
+            } else { document.getElementById('tarjeta-pedido').style.display = 'none'; }
         });
 
         function gestionar() {
-            const nom = document.getElementById('miNombre').value;
-            const pla = document.getElementById('miPlaca').value;
-            if(!nom || !pla) return alert("Socio, falta nombre y placa");
-
-            localStorage.setItem('motoNom', nom);
+            const nom = inputNom.value; const pla = document.getElementById('miPlaca').value;
+            if(!nom || !pla) return alert("Pon tu nombre y placa");
             localStorage.setItem('motoPla', pla);
-
             const btn = document.getElementById('btn-accion');
             if(btn.innerText === "ACEPTAR RUTA") {
-                db.collection("pedidos").doc(pedidoId).update({ 
-                    estado: "en_camino", moto_nombre: nom, placa: pla 
-                });
-                btn.innerText = "ENTREGA FINALIZADA ✅";
-                btn.style.background = "#0984e3";
+                db.collection("pedidos").doc(pedId).update({ estado: "en_camino", moto_nombre: nom, placa: pla });
+                navigator.geolocation.watchPosition(p => { db.collection("ubicaciones").doc("moto_activa").set({ lat: p.coords.latitude, lng: p.coords.longitude }); });
+                btn.innerText = "ENTREGA FINALIZADA ✅"; btn.style.background = "#0984e3";
             } else {
-                // GUARDAR ANTES DE RECARGAR
-                const itemHistorial = {
-                    comercio: datosPedidoActual.comercio,
-                    valor: datosPedidoActual.valor,
-                    hora: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-                };
                 let h = JSON.parse(localStorage.getItem('miHistorial')) || [];
-                h.unshift(itemHistorial);
+                h.unshift({ c: datosPed.comercio, v: datosPed.valor, h: new Date().toLocaleTimeString() });
                 localStorage.setItem('miHistorial', JSON.stringify(h));
-
-                // ACTUALIZAR BASE DE DATOS Y RECARGAR
-                db.collection("pedidos").doc(pedidoId).update({ estado: "completado" }).then(() => {
-                    location.reload();
-                });
+                db.collection("pedidos").doc(pedId).update({ estado: "completado" }).then(() => location.reload());
             }
         }
 
-        function mostrarHistorial() {
+        function mostrarH() {
             const h = JSON.parse(localStorage.getItem('miHistorial')) || [];
-            const lista = document.getElementById('lista-h');
-            document.getElementById('count-entregas').innerText = h.length;
-            lista.innerHTML = "";
-            h.forEach(item => {
-                lista.innerHTML += `
-                    <div class="item-h">
-                        <b>${item.hora}</b> - Recogido en: <b>${item.comercio}</b><br>
-                        Valor cobrado: $${item.valor}
-                    </div>
-                `;
-            });
-        }
-
-        function borrarH() {
-            if(confirm("¿Borrar historial de hoy?")) {
-                localStorage.removeItem('miHistorial');
-                location.reload();
-            }
+            document.getElementById('count-entregas').innerText = "Entregas Hoy: " + h.length;
+            if(h.length > 0) document.getElementById('lista-h').innerHTML = h.map(i => `<div>${i.h} - ${i.c} ($${i.v})</div>`).join('');
         }
     </script>
 </body>
