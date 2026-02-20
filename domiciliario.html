@@ -8,75 +8,66 @@
     <style>
         body { font-family: 'Poppins', sans-serif; margin: 0; background: #2d3436; color: white; text-align: center; }
         .header { background: #00b894; padding: 20px; font-weight: bold; }
-        .container { padding: 20px; }
-        .card-trabajo { background: white; color: #333; padding: 20px; border-radius: 15px; margin-top: 20px; display: none; }
-        .btn { width: 100%; padding: 15px; border-radius: 10px; border: none; font-weight: bold; margin-top: 10px; font-size: 1rem; cursor: pointer; }
+        .alerta { background: white; color: #333; padding: 20px; border-radius: 15px; margin: 20px; display: none; }
+        .btn { width: 90%; padding: 15px; border-radius: 10px; border: none; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
         .btn-aceptar { background: #00b894; color: white; }
-        .logo-vibras { color: #f39c12; font-size: 0.8rem; margin-top: 10px; display: block; }
     </style>
 </head>
 <body>
-
-<div class="header">
-    MODO DOMICILIARIO
-    <span class="logo-vibras">Propiedad de Vibras Positivas ©</span>
-</div>
-
-<div class="container">
-    <div id="espera">Esperando pedidos en Caucasia...</div>
-    
-    <div id="pedido-alerta" class="card-trabajo">
-        <h2>¡NUEVO PEDIDO!</h2>
-        <p id="info"></p>
-        <button class="btn btn-aceptar" id="btn-main" onclick="aceptar()">ACEPTAR RUTA</button>
+    <div class="header">MODO MOTO ACTIVA <br> <small>Vibras Positivas ©</small></div>
+    <div id="buscando">Buscando pedidos en Caucasia...</div>
+    <div id="caja-pedido" class="alerta">
+        <h2 style="color:#e67e22">¡NUEVO PEDIDO!</h2>
+        <p id="detalles"></p>
+        <button id="accion" class="btn btn-aceptar" onclick="gestionar()">ACEPTAR RUTA</button>
     </div>
-</div>
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script>
+        const firebaseConfig = { const firebaseConfig = {
+          apiKey: "AIzaSyCCPMFCTXUvfzgW9zp-op9yl4JkhzRa_lI",
+          authDomain: "ruta-local-caucasia-55f0b.firebaseapp.com",
+          projectId: "ruta-local-caucasia-55f0b",
+          storageBucket: "ruta-local-caucasia-55f0b.firebasestorage.app",
+          messagingSenderId: "1080436819425",
+          appId: "1:1080436819425:web:c13614086f5a2226423ea0"
+}; 
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        let pedidoId = "";
 
-<script>
-    const firebaseConfig = { /* TUS DATOS */ };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    let currentId = "";
-
-    // ACTIVAR GPS
-    function transmitirGPS() {
-        if (navigator.geolocation) {
+        // GPS AL ACEPTER
+        function activarGPS() {
             navigator.geolocation.watchPosition(pos => {
                 db.collection("ubicaciones").doc("moto_activa").set({
-                    lat: pos.coords.latitude,
-                    lng: pos.coords.longitude,
-                    timestamp: new Date()
+                    lat: pos.coords.latitude, lng: pos.coords.longitude, fecha: new Date()
                 });
-            }, err => console.log(err), { enableHighAccuracy: true });
+            }, null, { enableHighAccuracy: true });
         }
-    }
 
-    // Escuchar pedidos
-    db.collection("pedidos").where("estado", "==", "pendiente").onSnapshot(snap => {
-        snap.forEach(doc => {
-            currentId = doc.id;
-            const p = doc.data();
-            document.getElementById('espera').style.display = "none";
-            document.getElementById('pedido-alerta').style.display = "block";
-            document.getElementById('info').innerHTML = `Dir: ${p.direccion}<br>Cobrar: $${p.valor}`;
+        db.collection("pedidos").where("estado", "==", "pendiente").onSnapshot(snap => {
+            snap.forEach(doc => {
+                pedidoId = doc.id;
+                const p = doc.data();
+                document.getElementById('buscando').style.display = "none";
+                document.getElementById('caja-pedido').style.display = "block";
+                document.getElementById('detalles').innerHTML = `<b>Destino:</b> ${p.direccion}<br><b>Cobrar:</b> $${p.valor}`;
+            });
         });
-    });
 
-    function aceptar() {
-        const btn = document.getElementById('btn-main');
-        if(btn.innerText === "ACEPTAR RUTA") {
-            db.collection("pedidos").doc(currentId).update({ estado: "en_camino" });
-            transmitirGPS(); // Empezar a mandar ubicación
-            btn.innerText = "ENTREGADO ✅";
-            btn.style.background = "#0984e3";
-        } else {
-            db.collection("pedidos").doc(currentId).update({ estado: "completado" });
-            location.reload();
+        function gestionar() {
+            const btn = document.getElementById('accion');
+            if(btn.innerText === "ACEPTAR RUTA") {
+                db.collection("pedidos").doc(pedidoId).update({ estado: "en_camino" });
+                activarGPS();
+                btn.innerText = "ENTREGADO ✅";
+                btn.style.background = "#0984e3";
+            } else {
+                db.collection("pedidos").doc(pedidoId).update({ estado: "completado" });
+                location.reload();
+            }
         }
-    }
-</script>
+    </script>
 </body>
 </html>
