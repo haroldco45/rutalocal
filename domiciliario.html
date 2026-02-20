@@ -10,7 +10,6 @@
         .header { background: #00b894; padding: 20px; font-weight: bold; }
         .alerta { background: white; color: #333; padding: 20px; border-radius: 15px; margin: 20px; display: none; }
         .btn { width: 90%; padding: 15px; border-radius: 10px; border: none; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
-        .btn-aceptar { background: #00b894; color: white; }
     </style>
 </head>
 <body>
@@ -19,25 +18,24 @@
     <div id="caja-pedido" class="alerta">
         <h2 style="color:#e67e22">¡NUEVO PEDIDO!</h2>
         <p id="detalles"></p>
-        <button id="accion" class="btn btn-aceptar" onclick="gestionar()">ACEPTAR RUTA</button>
+        <button id="accion" class="btn btn-aceptar" style="background:#00b894; color:white;" onclick="gestionar()">ACEPTAR RUTA</button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script>
-        const firebaseConfig = { const firebaseConfig = {
-          apiKey: "AIzaSyCCPMFCTXUvfzgW9zp-op9yl4JkhzRa_lI",
-          authDomain: "ruta-local-caucasia-55f0b.firebaseapp.com",
-          projectId: "ruta-local-caucasia-55f0b",
-          storageBucket: "ruta-local-caucasia-55f0b.firebasestorage.app",
-          messagingSenderId: "1080436819425",
-          appId: "1:1080436819425:web:c13614086f5a2226423ea0"
-}; 
+        const firebaseConfig = {
+            apiKey: "AIzaSyCCPMFCTXUvfzgW9zp-op9yl4JkhzRa_lI",
+            authDomain: "ruta-local-caucasia-55f0b.firebaseapp.com",
+            projectId: "ruta-local-caucasia-55f0b",
+            storageBucket: "ruta-local-caucasia-55f0b.firebasestorage.app",
+            messagingSenderId: "1080436819425",
+            appId: "1:1080436819425:web:c13614086f5a2226423ea0"
+        };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         let pedidoId = "";
 
-        // GPS AL ACEPTER
         function activarGPS() {
             navigator.geolocation.watchPosition(pos => {
                 db.collection("ubicaciones").doc("moto_activa").set({
@@ -52,7 +50,7 @@
                 const p = doc.data();
                 document.getElementById('buscando').style.display = "none";
                 document.getElementById('caja-pedido').style.display = "block";
-                document.getElementById('detalles').innerHTML = `<b>Destino:</b> ${p.direccion}<br><b>Cobrar:</b> $${p.valor}`;
+                document.getElementById('detalles').innerHTML = `Dir: ${p.direccion}<br>Valor: $${p.valor}`;
             });
         });
 
