@@ -3,103 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Domiciliario | RUTA LOCAL</title>
+    <title>Domiciliario | RUTA LOCAL</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --verde-vibras: #28a745;
-            --naranja-ruta: #f39c12;
-            --oscuro: #2c3e50;
-            --rojo: #e74c3c;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            background-color: #1a1a1a; /* Fondo oscuro para ahorrar batería */
-            color: white;
-        }
-
-        .header {
-            background-color: var(--verde-vibras);
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
+        body { font-family: 'Poppins', sans-serif; margin: 0; background: #1a1a1a; color: white; }
+        .header { background: #28a745; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; }
         .container { padding: 20px; }
-
-        .card-pedido {
-            background: white;
-            color: var(--oscuro);
-            padding: 20px;
-            border-radius: 15px;
-            border-left: 8px solid var(--naranja-ruta);
-            margin-top: 20px;
-            display: none; /* Se activa cuando llega un pedido */
-        }
-
-        .btn-accion {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
-            font-weight: 700;
-            margin-top: 10px;
-            cursor: pointer;
-        }
-
-        .btn-aceptar { background-color: var(--verde-vibras); color: white; }
-        .btn-rechazar { background-color: var(--rojo); color: white; }
-        
-        .switch-container {
-            background: #333;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-        }
-
-        .online { color: var(--verde-vibras); font-weight: bold; }
+        .status-card { background: #333; padding: 20px; border-radius: 15px; text-align: center; }
+        .btn-gps { background: white; color: black; padding: 10px; border-radius: 8px; border: none; margin-top: 10px; font-weight: bold; }
+        .pedido-alerta { background: white; color: #2c3e50; padding: 20px; border-radius: 15px; margin-top: 20px; border-left: 8px solid #f39c12; }
     </style>
 </head>
 <body>
-
     <div class="header">
-        <strong>RUTA LOCAL</strong>
-        <span id="status-text">EN LÍNEA</span>
+        <span>RUTA LOCAL</span>
+        <span id="gps-status">GPS OFF</span>
     </div>
-
     <div class="container">
-        <div class="switch-container">
-            <h3>Estado: <span class="online">Vibras Positivas Activas</span></h3>
-            <p style="font-size: 0.8rem; color: #bbb;">Estás disponible para recibir pedidos en Caucasia</p>
-            <button onclick="simularPedido()" style="background: none; border: 1px solid #555; color: #555; font-size: 0.6rem;">(Simular Pedido)</button>
+        <div class="status-card">
+            <h3>Estado: <span style="color: #28a745;">Conectado</span></h3>
+            <button class="btn-gps" onclick="iniciarRastreo()">ACTIVAR GPS</button>
         </div>
 
-        <div id="pedido-alerta" class="card-pedido">
-            <h2 style="margin: 0;">¡NUEVO PEDIDO!</h2>
-            <p><strong>De:</strong> Restaurante El Sabor (Centro)</p>
-            <p><strong>Hacia:</strong> Barrio La Inmaculada</p>
-            <p><strong>Valor:</strong> $25.000 + Domicilio</p>
-            
-            <button class="btn-btn-accion btn-aceptar" onclick="aceptarPedido()">ACEPTAR Y VER RUTA</button>
-            <button class="btn-btn-accion btn-rechazar" onclick="document.getElementById('pedido-alerta').style.display='none'">RECHAZAR</button>
+        <div class="pedido-alerta">
+            <h4 style="margin:0">¡HAY UN PEDIDO!</h4>
+            <p style="font-size: 0.9rem">Restaurante Centro -> B. El Castillo</p>
+            <button style="width:100%; background:#28a745; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold;">ACEPTAR</button>
         </div>
     </div>
 
     <script>
-        function simularPedido() {
-            document.getElementById('pedido-alerta').style.display = 'block';
-            // Aquí vibraría el celular en una App real
-        }
-
-        function aceptarPedido() {
-            alert("¡Pedido aceptado, socia! Dirígete al local. VIBRAS POSITIVAS.");
-            // Aquí abriría Google Maps con la ubicación del local
-            window.location.href = "https://www.google.com/maps"; 
+        function iniciarRastreo() {
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(pos => {
+                    document.getElementById('gps-status').innerHTML = "GPS ON";
+                    document.getElementById('gps-status').style.color = "white";
+                    console.log("Lat: " + pos.coords.latitude + " Lng: " + pos.coords.longitude);
+                });
+                alert("GPS activado. ¡A camellar con Vibras Positivas!");
+            }
         }
     </script>
-
 </body>
 </html>
